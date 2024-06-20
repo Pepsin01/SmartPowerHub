@@ -9,6 +9,7 @@ namespace SmartPowerHub.Data
 
         public Task<WeatherForecast[]> GetForecastAsync(DateOnly startDate)
         {
+            Thread.Sleep(2000);
             return Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = startDate.AddDays(index),

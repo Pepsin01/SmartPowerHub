@@ -5,6 +5,8 @@
         int Id { get; set; }
         string Name { get; set; }
         string Description { get; set; }
+        string ControllerName { get; }
+        string Configuration { get; }
         List<IProgram> Programs { get; set; }
         Task<bool> IsOnlineAsync();
     }

@@ -11,5 +11,7 @@
         Task<IAppliance> AddApplianceAsync(int id);
 
         Task<IAppliance> UpdateApplianceAsync(int id);
+
+        Task<IAppliance> ConfigureApplianceAsync(string configuration);
     }
 }
