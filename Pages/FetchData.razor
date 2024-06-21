@@ -40,8 +40,16 @@ else
 @code {
     private WeatherForecast[]? forecasts;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
+        // Start the data fetching in a background task
+        _ = LoadForecastsAsync();
+    }
+
+    private async Task LoadForecastsAsync()
+    {
+        forecasts = await Task.Run(() => ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now)));
+
+        StateHasChanged();
     }
 }

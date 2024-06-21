@@ -15,6 +15,7 @@ namespace SmartPowerHub
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddSingleton<WeatherForecastService>();
+            builder.Services.AddSingleton<ApplianceService>();
             builder.Services.AddMudServices();
 
             var app = builder.Build();

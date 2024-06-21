@@ -8,11 +8,12 @@
     }
     public interface IProgram
     {
-        int Id { get; set; }
-        string Name { get; set; }
-        int PowerConsumptionInWattHours { get; set; }
-        int RunTimeInMinutes { get; set; }
+        string Name { get; }
+        int PowerConsumptionInWattHours { get; }
+        int RunTimeInMinutes { get; }
         Task<ProgramStatus> GetStatusAsync();
+        Task<int> GetRemainingTimeAsync();
         Task<bool> StartAsync();
+        Task<bool> TryStopAsync();
     }
 }

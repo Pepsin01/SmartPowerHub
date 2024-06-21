@@ -1,4 +1,6 @@
-﻿namespace SmartPowerHub.Data
+﻿using MudBlazor;
+
+namespace SmartPowerHub.Data
 {
     public class ApplianceService
     {

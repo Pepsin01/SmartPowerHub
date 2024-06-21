@@ -9,5 +9,8 @@
         string Configuration { get; }
         List<IProgram> Programs { get; set; }
         Task<bool> IsOnlineAsync();
+        Task<bool> IsConsoleAvailableAsync();
+        Task<string> SendCommandAsync(string command);
+        Task<string> GetHelp();
     }
 }

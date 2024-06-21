@@ -1,7 +1,8 @@
 ﻿namespace SmartPowerHub.Data
 {
-    public interface IIoTControllerInterface
+    public interface IIoTController
     {
+        string Name { get; }
         Task<List<IAppliance>> GetAppliancesAsync();
 
         Task<IAppliance> GetApplianceAsync(int id);
