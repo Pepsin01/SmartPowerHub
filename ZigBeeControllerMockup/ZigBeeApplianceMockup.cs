@@ -147,5 +147,33 @@ namespace ZigBeeControllerMockup
         {
             return Task.FromResult("PORT <port> - Set the port\nADDRESS <address> - Set the address\nCONNECT - Connect to the ZigBee network\n");
         }
+
+        public void SetAvailable()
+        {
+            lock (this)
+            {
+                foreach (var program in Programs.Where(program => program.GetStatusAsync().Result != ProgramStatus.Running))
+                {
+                    if (program is ZigBeeProgramMockup zigBeeProgram)
+                    {
+                        zigBeeProgram.MakeAvailable();
+                    }
+                }
+            }
+        }
+
+        public void SetUnavailable()
+        {
+            lock (this)
+            {
+                foreach (var program in Programs.Where(program => program.GetStatusAsync().Result != ProgramStatus.Running))
+                {
+                    if (program is ZigBeeProgramMockup zigBeeProgram)
+                    {
+                        zigBeeProgram.MakeUnavailable();
+                    }
+                }
+            }
+        }
     }
 }
