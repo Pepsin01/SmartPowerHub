@@ -13,9 +13,9 @@ namespace ZigBeeControllerMockup
         int Id { get; set; }
         string Name { get; set; }
         string Description { get; set; }
-        string ControllerName { get; }
+        IIoTController Controller { get; }
         string Configuration { get; }
-        List<IProgram> Programs { get; set; }
+        Task<IProgram[]> GetProgramsAsync();
         Task<bool> IsOnlineAsync();
         Task<bool> IsConsoleAvailableAsync();
         Task<string> SendCommandAsync(string command);
@@ -27,7 +27,7 @@ namespace ZigBeeControllerMockup
         private bool _isConsoleAvailable;
         private string _name;
         private string _description;
-
+        private readonly List<IProgram> _programs;
         private bool ParseConfiguration(string configuration)
         {
             if (configuration == "")
@@ -54,10 +54,41 @@ namespace ZigBeeControllerMockup
             Configuration = string.Join(',', splitConfiguration);
         }
 
-        public ZigBeeApplianceMockup(int id, string controllerName, string configuration = "")
+        private List<IProgram> InitializeProgramsRandom(int id)
+        {
+            (int lowerBoundry, int upperBoundry)[] possibleAppliancePowers = {
+                (1, 2), // testing appliance
+                (500, 1500), // something like a washing machine
+                (5000, 15000) // something like a heat pump
+            };
+            (int lowerBoundry, int upperBoundry)[] possibleApplianceRunTimes = {
+                (1, 2), // testing appliance
+                (60, 120), // something like a washing machine
+                (240, 720) // something like a heat pump
+            };
+            string[] possibleProgramNames = {
+                "Normal",
+                "Eco",
+                "Intensive",
+            };
+
+            var random = new Random();
+            return (from possibleProgramName in possibleProgramNames
+                    let powerConsumption =
+                        random.Next(possibleAppliancePowers[id].lowerBoundry, possibleAppliancePowers[id].upperBoundry)
+                    let runTime =
+                        random.Next(possibleApplianceRunTimes[id].lowerBoundry,
+                            possibleApplianceRunTimes[id].upperBoundry)
+                    select new ZigBeeProgramMockup(possibleProgramName, powerConsumption, runTime, this))
+                .Cast<IProgram>()
+                .ToList();
+        }
+
+        public ZigBeeApplianceMockup(int id, IIoTController controller, string configuration = "")
         {
             _isOnline = false;
             _isConsoleAvailable = true;
+            _programs = InitializeProgramsRandom(id);
 
             Id = id;
             if (!ParseConfiguration(configuration))
@@ -66,7 +97,7 @@ namespace ZigBeeControllerMockup
                 Description = $"This is default mockup ZigBee Appliance {id}";
                 Configuration = $"ZIGBEE,{Name},{Description},port,address";
             }
-            ControllerName = controllerName;
+            Controller = controller;
         }
         public int Id { get; set; }
 
@@ -95,9 +126,13 @@ namespace ZigBeeControllerMockup
                 }
             }
         }
-        public string ControllerName { get; }
+        public IIoTController Controller { get; }
         public string Configuration { get; private set; }
-        public List<IProgram> Programs { get; set; }
+        public Task<IProgram[]> GetProgramsAsync()
+        {
+            return Task.FromResult(_programs.ToArray());
+        }
+
         public Task<bool> IsOnlineAsync()
         {
             return Task.FromResult(_isOnline);
@@ -145,14 +180,23 @@ namespace ZigBeeControllerMockup
 
         public Task<string> GetHelp()
         {
-            return Task.FromResult("PORT <port> - Set the port\nADDRESS <address> - Set the address\nCONNECT - Connect to the ZigBee network\n");
+            return Task.FromResult
+            (
+                """
+                PORT <port> - Set the port
+                ADDRESS <address> - Set the address
+                CONNECT - Connect to the ZigBee network
+
+                """
+            );
         }
 
         public void SetAvailable()
         {
             lock (this)
             {
-                foreach (var program in Programs.Where(program => program.GetStatusAsync().Result != ProgramStatus.Running))
+                foreach (var program in _programs.Where(program =>
+                             program.GetStatusAsync().Result != ProgramStatus.Running))
                 {
                     if (program is ZigBeeProgramMockup zigBeeProgram)
                     {
@@ -166,7 +210,8 @@ namespace ZigBeeControllerMockup
         {
             lock (this)
             {
-                foreach (var program in Programs.Where(program => program.GetStatusAsync().Result != ProgramStatus.Running))
+                foreach (var program in _programs.Where(program =>
+                             program.GetStatusAsync().Result != ProgramStatus.Running))
                 {
                     if (program is ZigBeeProgramMockup zigBeeProgram)
                     {

@@ -5,9 +5,9 @@
         int Id { get; set; }
         string Name { get; set; }
         string Description { get; set; }
-        string ControllerName { get; }
+        IIoTController Controller { get; }
         string Configuration { get; }
-        List<IProgram> Programs { get; set; }
+        Task<IProgram[]> GetProgramsAsync();
         Task<bool> IsOnlineAsync();
         Task<bool> IsConsoleAvailableAsync();
         Task<string> SendCommandAsync(string command);

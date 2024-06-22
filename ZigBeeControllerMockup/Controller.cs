@@ -1,51 +1,49 @@
-﻿namespace ZigBeeControllerMockup
+﻿// Ignore Spelling: Mockup
+
+namespace ZigBeeControllerMockup
 {
     public interface IIoTController
     {
         string Name { get; }
-        Task<List<IAppliance>> GetAppliancesAsync();
-
-        Task<IAppliance> GetApplianceAsync(int id);
+        Task<IAppliance?> GetApplianceAsync(int id);
 
         Task<bool> DeleteApplianceAsync(int id);
 
-        Task<IAppliance> AddApplianceAsync(int id);
+        Task<IAppliance?> AddApplianceAsync(int id);
 
-        Task<IAppliance> UpdateApplianceAsync(int id);
-
-        Task<IAppliance> ConfigureApplianceAsync(string configuration);
+        Task<IAppliance?> AddApplianceWithConfigAsync(int id, string configuration);
     }
-    public class Controller : IIoTController
+    public class ZigBeeControllerMockup : IIoTController
     {
+        private readonly List<IAppliance> _appliances = new ();
         public string Name => "ZigBee Controller";
-        public Task<List<IAppliance>> GetAppliancesAsync()
-        {
-            throw new NotImplementedException();
-        }
 
-        public Task<IAppliance> GetApplianceAsync(int id)
+        public Task<IAppliance?> GetApplianceAsync(int id)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(_appliances.FirstOrDefault(appliance => appliance.Id == id));
         }
 
         public Task<bool> DeleteApplianceAsync(int id)
         {
-            throw new NotImplementedException();
+            var appliance = _appliances.FirstOrDefault(appliance => appliance.Id == id);
+            if (appliance == null)
+                return Task.FromResult(false);
+            _appliances.Remove(appliance);
+            return Task.FromResult(true);
         }
 
-        public Task<IAppliance> AddApplianceAsync(int id)
+        public Task<IAppliance?> AddApplianceAsync(int id)
         {
-            throw new NotImplementedException();
+            var appliance = new ZigBeeApplianceMockup(id, this);
+            _appliances.Add(appliance);
+            return Task.FromResult<IAppliance?>(appliance);
         }
 
-        public Task<IAppliance> UpdateApplianceAsync(int id)
+        public Task<IAppliance?> AddApplianceWithConfigAsync(int id, string configuration)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<IAppliance> ConfigureApplianceAsync(string configuration)
-        {
-            throw new NotImplementedException();
+            var appliance = new ZigBeeApplianceMockup(id, this, configuration);
+            _appliances.Add(appliance);
+            return Task.FromResult<IAppliance?>(appliance);
         }
     }
 }
