@@ -1,29 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using IoTControllerContracts;
 
 namespace ZigBeeControllerMockup
 {
-    public enum ProgramStatus
-    {
-        Available,
-        Unavailable,
-        Running
-    }
-    public interface IProgram
-    {
-        string Name { get; }
-        int PowerConsumptionInWattHours { get; }
-        int RunTimeInMinutes { get; }
-        Task<ProgramStatus> GetStatusAsync();
-        Task<int> GetRemainingTimeAsync();
-        Task<bool> StartAsync();
-        Task<bool> TryStopAsync();
-    }
     internal class ZigBeeProgramMockup : IProgram
     {
         private ProgramStatus _status = ProgramStatus.Available;

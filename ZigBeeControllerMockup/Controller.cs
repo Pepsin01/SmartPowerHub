@@ -1,18 +1,9 @@
 ﻿// Ignore Spelling: Mockup
 
+using IoTControllerContracts;
+
 namespace ZigBeeControllerMockup
 {
-    public interface IIoTController
-    {
-        string Name { get; }
-        Task<IAppliance?> GetApplianceAsync(int id);
-
-        Task<bool> DeleteApplianceAsync(int id);
-
-        Task<IAppliance?> AddApplianceAsync(int id);
-
-        Task<IAppliance?> AddApplianceWithConfigAsync(int id, string configuration);
-    }
     public class ZigBeeControllerMockup : IIoTController
     {
         private readonly List<IAppliance> _appliances = new ();

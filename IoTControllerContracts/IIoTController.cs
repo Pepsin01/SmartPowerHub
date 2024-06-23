@@ -1,4 +1,4 @@
-﻿namespace SmartPowerHub.Data
+﻿namespace IoTControllerContracts
 {
     public interface IIoTController
     {

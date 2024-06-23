@@ -3,12 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartPowerHub", "SmartPowerHub.csproj", "{0E3F9C5B-BADC-474C-9467-D041D6775BC2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B51E6C1A-A020-4371-8FB7-638F02C090E9} = {B51E6C1A-A020-4371-8FB7-638F02C090E9}
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZigBeeControllerMockup", "ZigBeeControllerMockup\ZigBeeControllerMockup.csproj", "{B51E6C1A-A020-4371-8FB7-638F02C090E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZigBeeControllerMockup", "ZigBeeControllerMockup\ZigBeeControllerMockup.csproj", "{B51E6C1A-A020-4371-8FB7-638F02C090E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoTControllerContracts", "IoTControllerContracts\IoTControllerContracts.csproj", "{D5C54A4B-7FCA-49A0-8D0E-C5945BEAFD92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmartPowerHub", "SmartPowerHub\SmartPowerHub.csproj", "{5A76FFC8-923C-4063-96F2-4B774567534C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,14 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0E3F9C5B-BADC-474C-9467-D041D6775BC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E3F9C5B-BADC-474C-9467-D041D6775BC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E3F9C5B-BADC-474C-9467-D041D6775BC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E3F9C5B-BADC-474C-9467-D041D6775BC2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B51E6C1A-A020-4371-8FB7-638F02C090E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B51E6C1A-A020-4371-8FB7-638F02C090E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B51E6C1A-A020-4371-8FB7-638F02C090E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B51E6C1A-A020-4371-8FB7-638F02C090E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5C54A4B-7FCA-49A0-8D0E-C5945BEAFD92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5C54A4B-7FCA-49A0-8D0E-C5945BEAFD92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5C54A4B-7FCA-49A0-8D0E-C5945BEAFD92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5C54A4B-7FCA-49A0-8D0E-C5945BEAFD92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A76FFC8-923C-4063-96F2-4B774567534C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A76FFC8-923C-4063-96F2-4B774567534C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A76FFC8-923C-4063-96F2-4B774567534C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A76FFC8-923C-4063-96F2-4B774567534C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

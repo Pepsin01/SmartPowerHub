@@ -13,4 +13,8 @@
     <Exec Command="call postbuild.bat &quot;$(TargetPath)&quot; &quot;$(OutDir)&quot;" />
   </Target>
 
+  <ItemGroup>
+    <ProjectReference Include="..\IoTControllerContracts\IoTControllerContracts.csproj" />
+  </ItemGroup>
+
 </Project>
