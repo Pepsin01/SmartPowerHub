@@ -8,7 +8,7 @@ namespace SmartPowerHub.Data
     public class ApplianceService
     {
         private readonly IIoTController _controller;
-        /*
+        /**/
         private readonly List<IIoTController> _controllers;
         private List<IAppliance> _appliances = new();
 
@@ -48,6 +48,7 @@ namespace SmartPowerHub.Data
                     }
                     string errorMessage = sb.ToString();
                     //Display or log the error based on your application.
+                    Console.WriteLine(errorMessage);
                 }
 
             }
@@ -62,6 +63,6 @@ namespace SmartPowerHub.Data
         {
             return Task.FromResult(_appliances);
         }
-        */
+        /**/
     }
 }
