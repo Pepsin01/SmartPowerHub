@@ -5,6 +5,9 @@ using SmartPowerHub.Data;
 using Serilog;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using SmartPowerHub.Database;
+using SmartPowerHub.Database.Contexts;
 
 namespace SmartPowerHub
 {
@@ -30,6 +33,11 @@ namespace SmartPowerHub
 
             builder.Host.UseSerilog();
 
+            // Add DbContext with SQLite
+            var connectionString = builder.Configuration.GetConnectionString("ApplianceDatabase");
+            builder.Services.AddDbContext<ApplianceContext>(options =>
+                options.UseSqlite(connectionString));
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -38,6 +46,15 @@ namespace SmartPowerHub
                 app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
+            }
+
+            if (app.Environment.IsDevelopment())
+            {
+                using var scope = app.Services.CreateScope();
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<ApplianceContext>();
+                context.Database.Migrate();
+                SeedData.SeedMockAppliances(context);
             }
 
             app.UseHttpsRedirection();
