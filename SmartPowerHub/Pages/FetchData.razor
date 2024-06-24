@@ -2,6 +2,7 @@
 @using SmartPowerHub.Data
 @inject WeatherForecastService ForecastService
 @inject ApplianceService ApplianceService
+@inject Serilog.ILogger Logger
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -50,6 +51,8 @@ else
     private async Task LoadForecastsAsync()
     {
         forecasts = await Task.Run(() => ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now)));
+
+        Logger.Information("Fetched {Count} forecasts", forecasts.Length);
 
         StateHasChanged();
     }

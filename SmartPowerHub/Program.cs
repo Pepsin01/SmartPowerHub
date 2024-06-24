@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.Services;
 using SmartPowerHub.Data;
+using Serilog;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SmartPowerHub
 {
@@ -9,6 +12,12 @@ namespace SmartPowerHub
     {
         public static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                //.MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
@@ -17,6 +26,9 @@ namespace SmartPowerHub
             builder.Services.AddSingleton<WeatherForecastService>();
             builder.Services.AddSingleton<ApplianceService>();
             builder.Services.AddMudServices();
+            builder.Services.AddSingleton(Log.Logger);
+
+            builder.Host.UseSerilog();
 
             var app = builder.Build();
 

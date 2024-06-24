@@ -2,6 +2,7 @@
 using System.Text;
 using IoTControllerContracts;
 using MudBlazor;
+using Serilog;
 
 namespace SmartPowerHub.Data
 {
@@ -48,7 +49,7 @@ namespace SmartPowerHub.Data
                     }
                     string errorMessage = sb.ToString();
                     //Display or log the error based on your application.
-                    Console.WriteLine(errorMessage);
+                    Log.Error(errorMessage);
                 }
 
             }
