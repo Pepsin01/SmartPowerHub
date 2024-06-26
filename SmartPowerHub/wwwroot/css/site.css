@@ -66,3 +66,17 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+
+.square-paper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.hover-paper {
+
+}
+
+    .hover-paper:hover {
+        background-color: rgba(0, 0, 0, 0.1); /* Adjust the color and opacity as needed */
+    }

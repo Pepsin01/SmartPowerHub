@@ -1,0 +1,227 @@
+﻿@page "/ApplianceOverview"
+@using SmartPowerHub.Data
+@using IoTControllerContracts
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor
+@inject ApplianceService applianceService
+@inject Serilog.ILogger Logger
+@inject ISnackbar Snackbar
+
+<PageTitle>Appliance Overview</PageTitle>
+
+@if (_displayableAppliances == null)
+{
+    <MudContainer>
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+        <MudText Color="Color.Primary" Typo="Typo.h6">Loading Appliances...</MudText>
+    </MudContainer>
+    <MudOverlay Visible="true" DarkBackground="true"/>
+}
+
+@if(_displayableAppliances != null)
+{
+    <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4">Appliance Overview</MudText>
+    <MudGrid Class="p-4">
+        <MudItem xs="12">
+        </MudItem>
+        <MudItem xs="12">
+            <MudGrid Justify="Justify.FlexStart">
+                @foreach (var displayableAppliance in _displayableAppliances)
+                {
+                    <MudItem xs="6" sm="4" md="3" lg="2">
+                        <MudPaper Elevation="4" Class="square-paper hover-paper d-flex flex-column align-center justify-center mud-width-full rounded-lg" @onclick="displayableAppliance.ToggleSelected">
+                            @if (!displayableAppliance.IsSelected)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.DevicesOther" Color="Color.Primary" Style="font-size: 5rem;"/>
+                                <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h6" Class="m-4">@displayableAppliance.Appliance.Name</MudText>
+                            }
+                            @if (displayableAppliance.IsSelected)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.DevicesOther" Color="Color.Secondary" Style="font-size: 5rem;"/>
+                                <MudText Align="Align.Center" Color="Color.Secondary" Typo="Typo.h6" Class="m-4">@displayableAppliance.Appliance.Name</MudText>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                }
+                <MudItem xs="6" sm="4" md="3" lg="2">
+                    <MudPaper Elevation="0" Class="square-paper d-flex flex-column align-center justify-center mud-width-full">
+                        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="font-size: 10rem;" OnClick="ToggleControllerPicker" />
+                        <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h6" Class="m-4">Add New Appliance</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+}
+
+<MudDialog @bind-IsVisible="IsChooseControllerVisible">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Choose Controller
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudSelect @bind-Value="SelectedController" T="string" Label="Controller" AnchorOrigin="Origin.BottomCenter">
+            @foreach (var controller in _availableControllers)
+            {
+                <MudSelectItem Value="@controller"/>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="ToggleControllerPicker">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="SubmitSelectedController">Confirm</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="IsAddingApplianceVisible" OnBackdropClick="() => {}">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Loading...
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
+    </DialogContent>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="IsConfigDialogVisible" OnBackdropClick="() => {}">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1"/>
+            Appliance Configuration
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm Model="@_editApplianceForm" OnValidSubmit="_displayableAppliances[_displayableAppliances.Count() - 1].OnValidEditSubmit">
+        <DataAnnotationsValidator/>
+        <MudCard>
+            <MudCardContent>
+                <MudTextField Label="Name" HelperText="Max. 50 characters"
+                                  @bind-Value="_editApplianceForm.Name" For="@(() => _editApplianceForm.Name)" />
+                <MudTextField Label="Email" Class="mt-3"
+                                  @bind-Value="_editApplianceForm.Description" For="@(() => _editApplianceForm.Description)" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton OnClick="ToggleApplianceConfiguration">Cancel</MudButton>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Confirm</MudButton>
+            </MudCardActions>
+        </MudCard>
+        </EditForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private bool IsChooseControllerVisible { get; set; }
+    private bool IsAddingApplianceVisible { get; set; }
+    private bool IsConfigDialogVisible { get; set; }
+    private string SelectedController { get; set; } = string.Empty;
+    private EditApplianceForm _editApplianceForm = new EditApplianceForm("", "");
+    private string[] _availableControllers = [];
+    private List<DisplayAppliance> _displayableAppliances = [];
+
+    protected override void OnInitialized()
+    {
+        Logger.Information("ApplianceOverview page initialized");
+        _ = GetAvailableControllers();
+        _ = LoadAppliancesAsync();
+    }
+
+    private async Task GetAvailableControllers()
+    {
+        var controllers = await Task.Run(() => applianceService.GetAvailableControllersAsync());
+        Logger.Information("Fetched {Count} controllers", controllers.Length);
+        _availableControllers = controllers;
+    }
+
+    private async Task LoadAppliancesAsync()
+    {
+        var appliances = await Task.Run(() => applianceService.GetAppliancesAsync());
+        Logger.Information("Fetched {Count} appliances", appliances.Length);
+        _displayableAppliances = appliances.Select(a => new DisplayAppliance(a, this)).ToList();
+        StateHasChanged();
+    }
+
+    private void ToggleControllerPicker()
+    {
+        IsChooseControllerVisible = !IsChooseControllerVisible;
+    }
+
+    private void SubmitSelectedController()
+    {
+        IsChooseControllerVisible = false;
+        IsAddingApplianceVisible = true;
+        if (SelectedController == string.Empty)
+        {
+            IsAddingApplianceVisible = false;
+            return;
+        }
+        AddAppliance();
+    }
+
+    private void AddAppliance()
+    {
+        var newAppliance = applianceService.AddApplianceAsync(SelectedController).Result;
+        IsAddingApplianceVisible = false;
+        if (newAppliance == null)
+            Snackbar.Add("Failed to add appliance", Severity.Error);
+        else
+        {
+            Snackbar.Add("Appliance added successfully", Severity.Success);
+            _displayableAppliances.Add(new DisplayAppliance(newAppliance, this));
+            _editApplianceForm = new EditApplianceForm(newAppliance.Name, newAppliance.Description);
+            IsConfigDialogVisible = true;
+        }
+    }
+
+    private void ToggleApplianceConfiguration()
+    {
+        IsConfigDialogVisible = !IsConfigDialogVisible;
+    }
+
+    class DisplayAppliance(IAppliance appliance, ApplianceOverview ao)
+    {
+        public IAppliance Appliance { get; } = appliance;
+        public bool IsSelected { get; private set; }
+
+        public void ToggleSelected()
+        {
+            IsSelected = !IsSelected;
+        }
+
+        public void ShowEditDialog()
+        {
+            ao._editApplianceForm = new EditApplianceForm(Appliance.Name, Appliance.Description);
+            ao.IsConfigDialogVisible = true;
+        }
+
+        public void OnValidEditSubmit(EditContext context)
+        {
+            Appliance.Name = ao._editApplianceForm.Name;
+            Appliance.Description = ao._editApplianceForm.Description;
+            ao.IsConfigDialogVisible = false;
+            ao.IsAddingApplianceVisible = true;
+            var result = ao.applianceService.UpdateApplianceAsync(Appliance).Result;
+            ao.IsAddingApplianceVisible = false;
+            if (result)
+                ao.Snackbar.Add("Appliance updated successfully", Severity.Success);
+            else
+                ao.Snackbar.Add("Failed to update appliance", Severity.Error);
+
+            ao.StateHasChanged();
+        }
+    }
+
+    public class EditApplianceForm(string Name, string Description)
+    {
+        [Required]
+        [StringLength(50, ErrorMessage = "Name is too long.")]
+        public string Name { get; set; } = Name;
+
+        [Required]
+        [StringLength(500, ErrorMessage = "Description is too long.")]
+        public string Description { get; set; } = Description;
+    }
+
+
+}

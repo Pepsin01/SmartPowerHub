@@ -39,6 +39,8 @@ namespace ZigBeeControllerMockup
 
         private List<IProgram> InitializeProgramsRandom(int id)
         {
+            int index = (id - 1) % 3;
+
             (int lowerBoundry, int upperBoundry)[] possibleAppliancePowers = {
                 (1, 2), // testing appliance
                 (500, 1500), // something like a washing machine
@@ -58,10 +60,10 @@ namespace ZigBeeControllerMockup
             var random = new Random();
             return (from possibleProgramName in possibleProgramNames
                     let powerConsumption =
-                        random.Next(possibleAppliancePowers[id].lowerBoundry, possibleAppliancePowers[id].upperBoundry)
+                        random.Next(possibleAppliancePowers[index].lowerBoundry, possibleAppliancePowers[index].upperBoundry)
                     let runTime =
-                        random.Next(possibleApplianceRunTimes[id].lowerBoundry,
-                            possibleApplianceRunTimes[id].upperBoundry)
+                        random.Next(possibleApplianceRunTimes[index].lowerBoundry,
+                            possibleApplianceRunTimes[index].upperBoundry)
                     select new ZigBeeProgramMockup(possibleProgramName, powerConsumption, runTime, this))
                 .Cast<IProgram>()
                 .ToList();
