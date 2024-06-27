@@ -9,7 +9,7 @@ namespace SmartPowerHub.Data;
 
 public class ApplianceService
 {
-    private readonly List<IIoTController> _controllers;
+    private readonly List<IApplianceController> _controllers;
     private readonly List<IAppliance> _appliances;
     private readonly IServiceProvider _serviceProvider;
 
@@ -25,10 +25,10 @@ public class ApplianceService
     /// </summary>
     /// <param name="path"> The path to the directory containing the controller dlls </param>
     /// <returns> A list of all found controllers </returns>
-    private List<IIoTController> InitializeAvailableControllers(string path)
+    private List<IApplianceController> InitializeAvailableControllers(string path)
     {
         Log.Information($"Searching for controllers in {path}");
-        var controllers = new List<IIoTController>();
+        var controllers = new List<IApplianceController>();
         var files = Directory.GetFiles(path, "*.dll");
         foreach (var file in files)
             try
@@ -38,8 +38,8 @@ public class ApplianceService
                 var types = assembly.GetTypes();
                 foreach (var type in types)
                 {
-                    if (type.GetInterface(nameof(IIoTController)) == null) continue;
-                    if (Activator.CreateInstance(type) is not IIoTController controller) continue;
+                    if (type.GetInterface(nameof(IApplianceController)) == null) continue;
+                    if (Activator.CreateInstance(type) is not IApplianceController controller) continue;
                     controllers.Add(controller);
                     Log.Information($"Found controller: {controller.Name}");
                 }
@@ -144,7 +144,7 @@ public class ApplianceService
     /// </summary>
     /// <param name="appliance"> The appliance to remove </param>
     /// <returns> True if the appliance was removed successfully, false otherwise </returns>
-    public async Task<bool> RemoveApplianceAsync(IAppliance appliance)
+    public async Task<bool> DeleteApplianceAsync(IAppliance appliance)
     {
         // try to delete the appliance from the controller
         var result = await appliance.Controller.DeleteApplianceAsync(appliance.Id);

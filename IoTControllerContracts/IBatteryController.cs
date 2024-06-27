@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace IoTControllerContracts
 {
-    public interface IAppliance : IDevice
+    public interface IBatteryController
     {
-        IApplianceController Controller { get; }
-        Task<IProgram[]> GetProgramsAsync();
     }
 }

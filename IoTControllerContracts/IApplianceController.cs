@@ -1,6 +1,6 @@
 ﻿namespace IoTControllerContracts
 {
-    public interface IIoTController
+    public interface IApplianceController
     {
         string Name { get; }
         Task<IAppliance?> GetApplianceAsync(int id);

@@ -69,7 +69,7 @@ namespace ZigBeeControllerMockup
                 .ToList();
         }
 
-        public ZigBeeApplianceMockup(int id, IIoTController controller, string configuration = "")
+        public ZigBeeApplianceMockup(int id, IApplianceController controller, string configuration = "")
         {
             _isOnline = false;
             _isConsoleAvailable = true;
@@ -112,7 +112,7 @@ namespace ZigBeeControllerMockup
                 }
             }
         }
-        public IIoTController Controller { get; }
+        public IApplianceController Controller { get; }
         public string Configuration { get; private set; }
         public Task<IProgram[]> GetProgramsAsync()
         {

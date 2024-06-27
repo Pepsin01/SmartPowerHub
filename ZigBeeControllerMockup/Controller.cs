@@ -4,7 +4,7 @@ using IoTControllerContracts;
 
 namespace ZigBeeControllerMockup
 {
-    public class ZigBeeControllerMockup : IIoTController
+    public class ZigBeeControllerMockup : IApplianceController
     {
         private readonly List<IAppliance> _appliances = new ();
         public string Name => "ZigBee Controller";
