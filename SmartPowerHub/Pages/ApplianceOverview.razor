@@ -34,11 +34,28 @@
                             {
                                 <MudIcon Icon="@Icons.Material.Filled.DevicesOther" Color="Color.Primary" Style="font-size: 5rem;"/>
                                 <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h6" Class="m-4">@displayableAppliance.Appliance.Name</MudText>
+                                @if (displayableAppliance.IsOnline)
+                                {
+                                    <MudText Align="Align.Center" Color="Color.Success" Typo="Typo.body1" Class="m-4">Online</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center" Color="Color.Error" Typo="Typo.body1" Class="m-4">Offline</MudText>
+                                }
                             }
                             @if (displayableAppliance.IsSelected)
                             {
-                                <MudIcon Icon="@Icons.Material.Filled.DevicesOther" Color="Color.Secondary" Style="font-size: 5rem;"/>
-                                <MudText Align="Align.Center" Color="Color.Secondary" Typo="Typo.h6" Class="m-4">@displayableAppliance.Appliance.Name</MudText>
+                                <MudGrid Justify="Justify.Center">
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.SettingsApplications" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" OnClick="ToggleApplianceConfiguration" />
+                                    </MudItem>
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Terminal" Variant="Variant.Filled" Color="Color.Default" Size="Size.Large"/>
+                                    </MudItem>
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" OnClick="ToggleDeleteDialog" />
+                                    </MudItem>
+                                </MudGrid>
                             }
                         </MudPaper>
                     </MudItem>
@@ -74,7 +91,7 @@
     </DialogActions>
 </MudDialog>
 
-<MudDialog @bind-IsVisible="IsAddingApplianceVisible" OnBackdropClick="() => {}">
+<MudDialog @bind-IsVisible="IsLoadingVisible" OnBackdropClick="() => {}">
     <TitleContent>
         <MudText Typo="Typo.h6">
             Loading...
@@ -85,7 +102,7 @@
     </DialogContent>
 </MudDialog>
 
-<MudDialog @bind-IsVisible="IsConfigDialogVisible" OnBackdropClick="() => {}">
+<MudDialog @bind-IsVisible="IsConfigDialogVisible">
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1"/>
@@ -93,32 +110,67 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <EditForm Model="@_editApplianceForm" OnValidSubmit="_displayableAppliances[_displayableAppliances.Count() - 1].OnValidEditSubmit">
-        <DataAnnotationsValidator/>
-        <MudCard>
-            <MudCardContent>
-                <MudTextField Label="Name" HelperText="Max. 50 characters"
-                                  @bind-Value="_editApplianceForm.Name" For="@(() => _editApplianceForm.Name)" />
-                <MudTextField Label="Email" Class="mt-3"
-                                  @bind-Value="_editApplianceForm.Description" For="@(() => _editApplianceForm.Description)" />
-            </MudCardContent>
-            <MudCardActions>
-                <MudButton OnClick="ToggleApplianceConfiguration">Cancel</MudButton>
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Confirm</MudButton>
-            </MudCardActions>
-        </MudCard>
+        <EditForm Model="@_selectedAppliance.Validator" OnValidSubmit="_selectedAppliance.OnValidEditSubmit">
+            <DataAnnotationsValidator/>
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Name" HelperText="Max. 50 characters"
+                                  @bind-Value="_selectedAppliance.Validator.Name" For="@(() => _selectedAppliance.Validator.Name)" />
+                    <MudTextField Label="Email" Class="mt-3"
+                                  @bind-Value="_selectedAppliance.Validator.Description" For="@(() => _selectedAppliance.Validator.Description)" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton OnClick="ToggleApplianceConfiguration">Cancel</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Confirm</MudButton>
+                </MudCardActions>
+            </MudCard>
         </EditForm>
     </DialogContent>
 </MudDialog>
 
+<MudDialog @bind-IsVisible="IsDeleteDialogVisible">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Delete Appliance
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body1">
+            Are you sure you want to delete this appliance?
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => IsDeleteDialogVisible = false">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="_selectedAppliance.DeleteAppliance">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     private bool IsChooseControllerVisible { get; set; }
-    private bool IsAddingApplianceVisible { get; set; }
+    private bool IsLoadingVisible { get; set; }
     private bool IsConfigDialogVisible { get; set; }
+    private bool IsDeleteDialogVisible { get; set; }
+    private bool IsConsoleDialogVisible { get; set; }
+
+    private void ToggleControllerPicker()
+    {
+        IsChooseControllerVisible = !IsChooseControllerVisible;
+    }
+
+    private void ToggleApplianceConfiguration()
+    {
+        IsConfigDialogVisible = !IsConfigDialogVisible;
+    }
+
+    private void ToggleDeleteDialog()
+    {
+        IsDeleteDialogVisible = !IsDeleteDialogVisible;
+    }
+
     private string SelectedController { get; set; } = string.Empty;
-    private EditApplianceForm _editApplianceForm = new EditApplianceForm("", "");
     private string[] _availableControllers = [];
     private List<DisplayAppliance> _displayableAppliances = [];
+    private DisplayAppliance _selectedAppliance;
 
     protected override void OnInitialized()
     {
@@ -142,86 +194,119 @@
         StateHasChanged();
     }
 
-    private void ToggleControllerPicker()
-    {
-        IsChooseControllerVisible = !IsChooseControllerVisible;
-    }
-
     private void SubmitSelectedController()
     {
         IsChooseControllerVisible = false;
-        IsAddingApplianceVisible = true;
+        IsLoadingVisible = true;
         if (SelectedController == string.Empty)
         {
-            IsAddingApplianceVisible = false;
+            IsLoadingVisible = false;
             return;
         }
         AddAppliance();
     }
 
+    /// <summary>
+    /// Tries to add a new appliance to the appliance service.
+    /// </summary>
     private void AddAppliance()
     {
         var newAppliance = applianceService.AddApplianceAsync(SelectedController).Result;
-        IsAddingApplianceVisible = false;
+        IsLoadingVisible = false;
         if (newAppliance == null)
             Snackbar.Add("Failed to add appliance", Severity.Error);
         else
         {
             Snackbar.Add("Appliance added successfully", Severity.Success);
-            _displayableAppliances.Add(new DisplayAppliance(newAppliance, this));
-            _editApplianceForm = new EditApplianceForm(newAppliance.Name, newAppliance.Description);
+            var newDisplayAppliance = new DisplayAppliance(newAppliance, this);
+            _displayableAppliances.Add(newDisplayAppliance);
+            newDisplayAppliance.ToggleSelected();
             IsConfigDialogVisible = true;
         }
     }
 
-    private void ToggleApplianceConfiguration()
+    /// <summary>
+    /// Class to hold the displayable appliance data for the overview page.
+    /// </summary>
+    /// <param name="appliance"> The appliance to display. </param>
+    /// <param name="ao"> The appliance overview page. </param>
+    class DisplayAppliance
     {
-        IsConfigDialogVisible = !IsConfigDialogVisible;
-    }
-
-    class DisplayAppliance(IAppliance appliance, ApplianceOverview ao)
-    {
-        public IAppliance Appliance { get; } = appliance;
+        public IAppliance Appliance { get; }
         public bool IsSelected { get; private set; }
+        public bool IsOnline { get; private set; }
+        private readonly ApplianceOverview _ao;
+        public EditApplianceValidator Validator { get; }
+
+        public DisplayAppliance(IAppliance appliance, ApplianceOverview ao)
+        {
+            Appliance = appliance;
+            _ao = ao;
+            Validator = new EditApplianceValidator(this);
+            _ = Refresh();
+        }
+
+        public async Task Refresh()
+        {
+            IsOnline = await Appliance.IsOnlineAsync();
+        }
 
         public void ToggleSelected()
         {
+            foreach (var appliance in _ao._displayableAppliances)
+                if (appliance != this)
+                    appliance.IsSelected = false;
             IsSelected = !IsSelected;
-        }
-
-        public void ShowEditDialog()
-        {
-            ao._editApplianceForm = new EditApplianceForm(Appliance.Name, Appliance.Description);
-            ao.IsConfigDialogVisible = true;
+            _ao._selectedAppliance = this;
         }
 
         public void OnValidEditSubmit(EditContext context)
         {
-            Appliance.Name = ao._editApplianceForm.Name;
-            Appliance.Description = ao._editApplianceForm.Description;
-            ao.IsConfigDialogVisible = false;
-            ao.IsAddingApplianceVisible = true;
-            var result = ao.applianceService.UpdateApplianceAsync(Appliance).Result;
-            ao.IsAddingApplianceVisible = false;
+            Appliance.Name = _ao._selectedAppliance.Validator.Name;
+            Appliance.Description = _ao._selectedAppliance.Validator.Description;
+            _ao.IsConfigDialogVisible = false;
+            _ao.IsLoadingVisible = true;
+            var result = _ao.applianceService.UpdateApplianceAsync(Appliance).Result;
+            _ao.IsLoadingVisible = false;
             if (result)
-                ao.Snackbar.Add("Appliance updated successfully", Severity.Success);
+                _ao.Snackbar.Add("Appliance updated successfully", Severity.Success);
             else
-                ao.Snackbar.Add("Failed to update appliance", Severity.Error);
+                _ao.Snackbar.Add("Failed to update appliance", Severity.Error);
 
-            ao.StateHasChanged();
+            IsSelected = false;
+            _ao.StateHasChanged();
+        }
+
+        public void DeleteAppliance()
+        {
+            _ao.IsLoadingVisible = true;
+            var result = _ao.applianceService.DeleteApplianceAsync(Appliance).Result;
+            _ao.IsLoadingVisible = false;
+            if (result)
+            {
+                _ao.Snackbar.Add("Appliance deleted successfully", Severity.Success);
+                _ao._displayableAppliances.Remove(this);
+            }
+            else
+                _ao.Snackbar.Add("Failed to delete appliance", Severity.Error);
+
+            _ao.ToggleDeleteDialog();
+            _ = _ao.LoadAppliancesAsync();
         }
     }
 
-    public class EditApplianceForm(string Name, string Description)
+    /// <summary>
+    /// Class to hold the form data for editing an appliance.
+    /// </summary>
+    /// <param name="displayAppliance"> The appliance to edit. </param>
+    class EditApplianceValidator(DisplayAppliance displayAppliance)
     {
         [Required]
-        [StringLength(50, ErrorMessage = "Name is too long.")]
-        public string Name { get; set; } = Name;
+        [StringLength(30, ErrorMessage = "Name is too long.")]
+        public string Name { get; set; } = displayAppliance.Appliance.Name;
 
         [Required]
-        [StringLength(500, ErrorMessage = "Description is too long.")]
-        public string Description { get; set; } = Description;
+        [StringLength(200, ErrorMessage = "Description is too long.")]
+        public string Description { get; set; } = displayAppliance.Appliance.Description;
     }
-
-
 }
