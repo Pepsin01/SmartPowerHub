@@ -1,24 +1,88 @@
-﻿
-
+﻿@using IoTControllerContracts
 
 <MudDialog>
     <DialogContent>
-        <MudText>@ContentText</MudText>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudPaper Style="height: 50vh; background-color: black; color: white; font-family: 'Courier New', Courier, monospace;" Square="true">
+                    @foreach (var line in _consoleText)
+                    {
+                        <MudText Typo="Typo.body1" Style="color: white;">@line</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="11">
+                <MudForm @ref="_form" @bind-IsValid="@_success" OnValidSubmit="ValidateForm">
+                    <MudTextField T="string" Label="Terminal Input" Required="true" @bind-Value="_terminalInput" Immediate="true" OnKeyDown="HandleKeyDown" Disabled="@_isDisabled" @ref="_inputRef" />
+                </MudForm>
+            </MudItem>
+            <MudItem xs="1">
+                <MudIconButton Icon="@Icons.Material.Filled.Send" Variant="Variant.Filled" Color="Color.Primary" OnClick="ValidateForm" />
+            </MudItem>
+        </MudGrid>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Submit">@ButtonText</MudButton>
     </DialogActions>
 </MudDialog>
+
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    [Parameter] public string ContentText { get; set; }
+    [Parameter] public IDevice Device { get; set; }
 
-    [Parameter] public string ButtonText { get; set; }
+    private MudForm? _form;
 
-    [Parameter] public Color Color { get; set; }
+    private bool _success;
 
-    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private string _terminalInput = "";
+
+    private List<string> _consoleText = [];
+
+    private bool _isDisabled;
+
+    private MudTextField<string>? _inputRef;
+
+    protected override void OnInitialized()
+    {
+        _ = GetHelp();
+    }
+
+    private async Task GetHelp()
+    {
+        _consoleText = (await Task.Run(() => Device.GetHelp())).Split('\n').ToList();
+        StateHasChanged();
+        if (_inputRef != null) await _inputRef.FocusAsync();
+    }
+
+    private void ValidateForm()
+    {
+        _form?.Validate();
+        if (_success)
+        {
+            _ = SendCommand();
+        }
+    }
+
+    private async Task SendCommand()
+    {
+        _isDisabled = true;
+        //StateHasChanged();
+        _consoleText.Add(_terminalInput);
+        _consoleText.Add(await Task.Run(() => Device.SendCommandAsync(_terminalInput)));
+        _terminalInput = "";
+        _isDisabled = false;
+        StateHasChanged();
+        if (_inputRef != null) await _inputRef.FocusAsync();
+    }
+
     void Cancel() => MudDialog.Cancel();
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            ValidateForm();
+        }
+    }
 }

@@ -1,9 +1,57 @@
 ﻿@page "/"
+@inject NavigationManager navigator
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudContainer Class="mt-16">
+    <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h1" Class="m-4">Welcome to Smart Power Hub!</MudText>
+    <MudGrid Class="mt-8" Justify="Justify.Center">
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="25" Class="rounded-lg pb-4 card-hover-effect" @onclick="NavigateToApplianceOverview">
+                <MudCardHeader Style="height: 100px;">
+                    <MudText Typo="Typo.h4" Style="color: white;" Align="Align.Center"><b >Appliance Overview</b></MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudImage Fluid="true" ObjectFit="ObjectFit.Contain" Src="images/appliances.svg" Alt="Appliance image" Style="max-width: 100%; and height: auto;" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="25" Class="rounded-lg pb-4 card-hover-effect" @onclick="NavigateToConsumptionPlanning">
+                <MudCardHeader Style="height: 100px;">
+                    <MudText Typo="Typo.h4" Style="color: white;" Align="Align.Center"><b >Consumption planning</b></MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudImage Fluid="true" ObjectFit="ObjectFit.Contain" Src="images/calendar.svg" Alt="Planning image" Style="max-width: 100%; and height: auto;" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="25" Class="rounded-lg pb-4 card-hover-effect" @onclick="NavigateToEnergySourceManagement">
+                <MudCardHeader Style="height: 100px;">
+                    <MudText Typo="Typo.h4" Style="color: white;" Align="Align.Center"><b >Energy source management</b></MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudImage Fluid="true" ObjectFit="ObjectFit.Contain" Src="images/solarPanel.svg" Alt="Energy image" Style="max-width: 100%; and height: auto;" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
 
-Welcome to your new app.
+@code {
+    private void NavigateToApplianceOverview()
+    {
+        navigator.NavigateTo("/ApplianceOverview");
+    }
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    private void NavigateToConsumptionPlanning()
+    {
+        navigator.NavigateTo("/ConsumptionPlanning");
+    }
+
+    private void NavigateToEnergySourceManagement()
+    {
+        navigator.NavigateTo("/EnergySourceManagement");
+    }
+}

@@ -1,11 +1,10 @@
 ﻿@page "/ApplianceOverview"
+@using Serilog
 @using SmartPowerHub.Data
-@using IoTControllerContracts
-@using System.ComponentModel.DataAnnotations
-@using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor
 @inject ApplianceService applianceService
-@inject Serilog.ILogger Logger
+@inject ILogger Logger
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Appliance Overview</PageTitle>
 
@@ -18,7 +17,7 @@
     <MudOverlay Visible="true" DarkBackground="true"/>
 }
 
-@if(_displayableAppliances != null)
+@if (_displayableAppliances != null)
 {
     <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4">Appliance Overview</MudText>
     <MudGrid Class="p-4">
@@ -47,13 +46,13 @@
                             {
                                 <MudGrid Justify="Justify.Center">
                                     <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
-                                        <MudIconButton Icon="@Icons.Material.Filled.SettingsApplications" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" OnClick="ToggleApplianceConfiguration" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.SettingsApplications" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" OnClick="ToggleApplianceConfiguration"/>
                                     </MudItem>
                                     <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Terminal" Variant="Variant.Filled" Color="Color.Default" Size="Size.Large"/>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Terminal" Variant="Variant.Filled" Color="Color.Default" Size="Size.Large" OnClick="displayableAppliance.ShowConsole" />
                                     </MudItem>
                                     <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" OnClick="ToggleDeleteDialog" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" OnClick="ToggleDeleteDialog"/>
                                     </MudItem>
                                 </MudGrid>
                             }
@@ -62,7 +61,7 @@
                 }
                 <MudItem xs="6" sm="4" md="3" lg="2">
                     <MudPaper Elevation="0" Class="square-paper d-flex flex-column align-center justify-center mud-width-full">
-                        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="font-size: 10rem;" OnClick="ToggleControllerPicker" />
+                        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="font-size: 10rem;" OnClick="ToggleControllerPicker"/>
                         <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h6" Class="m-4">Add New Appliance</MudText>
                     </MudPaper>
                 </MudItem>
@@ -91,7 +90,7 @@
     </DialogActions>
 </MudDialog>
 
-<MudDialog @bind-IsVisible="IsLoadingVisible" OnBackdropClick="() => {}">
+<MudDialog @bind-IsVisible="IsLoadingVisible" OnBackdropClick="() => { }">
     <TitleContent>
         <MudText Typo="Typo.h6">
             Loading...
@@ -114,10 +113,10 @@
             <DataAnnotationsValidator/>
             <MudCard>
                 <MudCardContent>
-                    <MudTextField Label="Name" HelperText="Max. 50 characters"
-                                  @bind-Value="_selectedAppliance.Validator.Name" For="@(() => _selectedAppliance.Validator.Name)" />
-                    <MudTextField Label="Email" Class="mt-3"
-                                  @bind-Value="_selectedAppliance.Validator.Description" For="@(() => _selectedAppliance.Validator.Description)" />
+                    <MudTextField Label="Name" HelperText="Max. 30 characters" AutoGrow
+                                  @bind-Value="_selectedAppliance.Validator.Name" For="@(() => _selectedAppliance.Validator.Name)"/>
+                    <MudTextField Label="Description" Class="mt-3" HelperText="Max. 200 characters" AutoGrow
+                                  @bind-Value="_selectedAppliance.Validator.Description" For="@(() => _selectedAppliance.Validator.Description)"/>
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton OnClick="ToggleApplianceConfiguration">Cancel</MudButton>
@@ -144,169 +143,3 @@
         <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="_selectedAppliance.DeleteAppliance">Delete</MudButton>
     </DialogActions>
 </MudDialog>
-
-@code {
-    private bool IsChooseControllerVisible { get; set; }
-    private bool IsLoadingVisible { get; set; }
-    private bool IsConfigDialogVisible { get; set; }
-    private bool IsDeleteDialogVisible { get; set; }
-    private bool IsConsoleDialogVisible { get; set; }
-
-    private void ToggleControllerPicker()
-    {
-        IsChooseControllerVisible = !IsChooseControllerVisible;
-    }
-
-    private void ToggleApplianceConfiguration()
-    {
-        IsConfigDialogVisible = !IsConfigDialogVisible;
-    }
-
-    private void ToggleDeleteDialog()
-    {
-        IsDeleteDialogVisible = !IsDeleteDialogVisible;
-    }
-
-    private string SelectedController { get; set; } = string.Empty;
-    private string[] _availableControllers = [];
-    private List<DisplayAppliance> _displayableAppliances = [];
-    private DisplayAppliance _selectedAppliance;
-
-    protected override void OnInitialized()
-    {
-        Logger.Information("ApplianceOverview page initialized");
-        _ = GetAvailableControllers();
-        _ = LoadAppliancesAsync();
-    }
-
-    private async Task GetAvailableControllers()
-    {
-        var controllers = await Task.Run(() => applianceService.GetAvailableControllersAsync());
-        Logger.Information("Fetched {Count} controllers", controllers.Length);
-        _availableControllers = controllers;
-    }
-
-    private async Task LoadAppliancesAsync()
-    {
-        var appliances = await Task.Run(() => applianceService.GetAppliancesAsync());
-        Logger.Information("Fetched {Count} appliances", appliances.Length);
-        _displayableAppliances = appliances.Select(a => new DisplayAppliance(a, this)).ToList();
-        StateHasChanged();
-    }
-
-    private void SubmitSelectedController()
-    {
-        IsChooseControllerVisible = false;
-        IsLoadingVisible = true;
-        if (SelectedController == string.Empty)
-        {
-            IsLoadingVisible = false;
-            return;
-        }
-        AddAppliance();
-    }
-
-    /// <summary>
-    /// Tries to add a new appliance to the appliance service.
-    /// </summary>
-    private void AddAppliance()
-    {
-        var newAppliance = applianceService.AddApplianceAsync(SelectedController).Result;
-        IsLoadingVisible = false;
-        if (newAppliance == null)
-            Snackbar.Add("Failed to add appliance", Severity.Error);
-        else
-        {
-            Snackbar.Add("Appliance added successfully", Severity.Success);
-            var newDisplayAppliance = new DisplayAppliance(newAppliance, this);
-            _displayableAppliances.Add(newDisplayAppliance);
-            newDisplayAppliance.ToggleSelected();
-            IsConfigDialogVisible = true;
-        }
-    }
-
-    /// <summary>
-    /// Class to hold the displayable appliance data for the overview page.
-    /// </summary>
-    /// <param name="appliance"> The appliance to display. </param>
-    /// <param name="ao"> The appliance overview page. </param>
-    class DisplayAppliance
-    {
-        public IAppliance Appliance { get; }
-        public bool IsSelected { get; private set; }
-        public bool IsOnline { get; private set; }
-        private readonly ApplianceOverview _ao;
-        public EditApplianceValidator Validator { get; }
-
-        public DisplayAppliance(IAppliance appliance, ApplianceOverview ao)
-        {
-            Appliance = appliance;
-            _ao = ao;
-            Validator = new EditApplianceValidator(this);
-            _ = Refresh();
-        }
-
-        public async Task Refresh()
-        {
-            IsOnline = await Appliance.IsOnlineAsync();
-        }
-
-        public void ToggleSelected()
-        {
-            foreach (var appliance in _ao._displayableAppliances)
-                if (appliance != this)
-                    appliance.IsSelected = false;
-            IsSelected = !IsSelected;
-            _ao._selectedAppliance = this;
-        }
-
-        public void OnValidEditSubmit(EditContext context)
-        {
-            Appliance.Name = _ao._selectedAppliance.Validator.Name;
-            Appliance.Description = _ao._selectedAppliance.Validator.Description;
-            _ao.IsConfigDialogVisible = false;
-            _ao.IsLoadingVisible = true;
-            var result = _ao.applianceService.UpdateApplianceAsync(Appliance).Result;
-            _ao.IsLoadingVisible = false;
-            if (result)
-                _ao.Snackbar.Add("Appliance updated successfully", Severity.Success);
-            else
-                _ao.Snackbar.Add("Failed to update appliance", Severity.Error);
-
-            IsSelected = false;
-            _ao.StateHasChanged();
-        }
-
-        public void DeleteAppliance()
-        {
-            _ao.IsLoadingVisible = true;
-            var result = _ao.applianceService.DeleteApplianceAsync(Appliance).Result;
-            _ao.IsLoadingVisible = false;
-            if (result)
-            {
-                _ao.Snackbar.Add("Appliance deleted successfully", Severity.Success);
-                _ao._displayableAppliances.Remove(this);
-            }
-            else
-                _ao.Snackbar.Add("Failed to delete appliance", Severity.Error);
-
-            _ao.ToggleDeleteDialog();
-            _ = _ao.LoadAppliancesAsync();
-        }
-    }
-
-    /// <summary>
-    /// Class to hold the form data for editing an appliance.
-    /// </summary>
-    /// <param name="displayAppliance"> The appliance to edit. </param>
-    class EditApplianceValidator(DisplayAppliance displayAppliance)
-    {
-        [Required]
-        [StringLength(30, ErrorMessage = "Name is too long.")]
-        public string Name { get; set; } = displayAppliance.Appliance.Name;
-
-        [Required]
-        [StringLength(200, ErrorMessage = "Description is too long.")]
-        public string Description { get; set; } = displayAppliance.Appliance.Description;
-    }
-}

@@ -116,21 +116,25 @@ namespace ZigBeeControllerMockup
         public string Configuration { get; private set; }
         public Task<IProgram[]> GetProgramsAsync()
         {
+            Thread.Sleep(500);
             return Task.FromResult(_programs.ToArray());
         }
 
         public Task<bool> IsOnlineAsync()
         {
+            Thread.Sleep(100);
             return Task.FromResult(_isOnline);
         }
 
         public Task<bool> IsConsoleAvailableAsync()
         {
+            Thread.Sleep(100);
             return Task.FromResult(_isConsoleAvailable);
         }
 
         public Task<string> SendCommandAsync(string command)
         {
+            Thread.Sleep(500);
             var parsedCommand = command.Split(' ');
 
             if (parsedCommand.Length < 1)
@@ -166,14 +170,12 @@ namespace ZigBeeControllerMockup
 
         public Task<string> GetHelp()
         {
+            Thread.Sleep(500);
             return Task.FromResult
             (
-                """
-                PORT <port> - Set the port
-                ADDRESS <address> - Set the address
-                CONNECT - Connect to the ZigBee network
-
-                """
+                "PORT <port> - Set the port\n" +
+                "ADDRESS <address> - Set the address\n" +
+                "CONNECT - Connect to the ZigBee network"
             );
         }
 
