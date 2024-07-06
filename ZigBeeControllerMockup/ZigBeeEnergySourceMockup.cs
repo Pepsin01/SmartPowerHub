@@ -1,23 +1,26 @@
-﻿// Ignore Spelling: Mockup
-
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using IoTControllerContracts;
 
 namespace ZigBeeControllerMockup
 {
-    internal class ZigBeeApplianceMockup : IAppliance
+    public class ZigBeeEnergySourceMockup : IEnergySource
     {
         private bool _isOnline;
         private bool _isConsoleAvailable;
         private string _name;
         private string _description;
-        private readonly List<IProgram> _programs;
+        private readonly int _maxPowerOutput;
         private bool ParseConfiguration(string configuration)
         {
             if (configuration == "")
                 return false;
             if (!configuration.StartsWith("ZIGBEE"))
                 return false;
-            
+
             var parsedConfiguration = configuration.Split(',');
 
             if (parsedConfiguration.Length < 5)
@@ -37,50 +40,19 @@ namespace ZigBeeControllerMockup
             Configuration = string.Join(',', splitConfiguration);
         }
 
-        private List<IProgram> InitializeProgramsRandom(int id)
-        {
-            int index = (id - 1) % 3;
-
-            (int lowerBoundry, int upperBoundry)[] possibleAppliancePowers = {
-                (1, 2), // testing appliance
-                (500, 1500), // something like a washing machine
-                (5000, 15000) // something like a heat pump
-            };
-            (int lowerBoundry, int upperBoundry)[] possibleApplianceRunTimes = {
-                (1, 2), // testing appliance
-                (60, 120), // something like a washing machine
-                (240, 720) // something like a heat pump
-            };
-            string[] possibleProgramNames = {
-                "Normal",
-                "Eco",
-                "Intensive",
-            };
-
-            var random = new Random();
-            return (from possibleProgramName in possibleProgramNames
-                    let powerConsumption =
-                        random.Next(possibleAppliancePowers[index].lowerBoundry, possibleAppliancePowers[index].upperBoundry)
-                    let runTime =
-                        random.Next(possibleApplianceRunTimes[index].lowerBoundry,
-                            possibleApplianceRunTimes[index].upperBoundry)
-                    select new ZigBeeProgramMockup(possibleProgramName, powerConsumption, runTime, this))
-                .Cast<IProgram>()
-                .ToList();
-        }
-
-        public ZigBeeApplianceMockup(int id, IApplianceController controller, string configuration = "")
+        public ZigBeeEnergySourceMockup(int id, IEnergySourceController controller, string configuration = "")
         {
             _isOnline = false;
             _isConsoleAvailable = true;
-            _programs = InitializeProgramsRandom(id);
+            _maxPowerOutput = new Random().Next(500, 2000);
+
 
             Id = id;
             Configuration = ",,,,";
             if (!ParseConfiguration(configuration))
             {
-                Name = $"Default ZigBee Appliance {id}";
-                Description = $"This is default mockup ZigBee Appliance {id}";
+                Name = $"Default ZigBee Energy Source {id}";
+                Description = $"This is default mockup ZigBee Energy Source {id}";
                 Configuration = $"ZIGBEE,{Name},{Description},port,address";
             }
             Controller = controller;
@@ -94,7 +66,7 @@ namespace ZigBeeControllerMockup
             {
                 lock (this)
                 {
-                    _name = value == "" ? $"Default ZigBee Appliance {Id}" : value;
+                    _name = value == "" ? $"Default ZigBee Energy Source {Id}" : value;
                     UpdateConfigurationAt(1, _name);
                 }
             }
@@ -107,19 +79,13 @@ namespace ZigBeeControllerMockup
             {
                 lock (this)
                 {
-                    _description = value == "" ? $"This is default mockup ZigBee Appliance {Id}" : value;
+                    _description = value == "" ? $"This is default mockup ZigBee Energy Source {Id}" : value;
                     UpdateConfigurationAt(2, _description);
                 }
             }
         }
         public string Configuration { get; private set; }
         public IController Controller { get; }
-
-        public Task<IProgram[]> GetProgramsAsync()
-        {
-            Thread.Sleep(500);
-            return Task.FromResult(_programs.ToArray());
-        }
 
         public Task<bool> IsOnlineAsync()
         {
@@ -180,34 +146,14 @@ namespace ZigBeeControllerMockup
             );
         }
 
-        public void SetAvailable()
+        public Task<int> GetMaxPowerOutput()
         {
-            lock (this)
-            {
-                foreach (var program in _programs.Where(program =>
-                             program.GetStatusAsync().Result != ProgramStatus.Running))
-                {
-                    if (program is ZigBeeProgramMockup zigBeeProgram)
-                    {
-                        zigBeeProgram.MakeAvailable();
-                    }
-                }
-            }
+            return Task.FromResult(_maxPowerOutput);
         }
 
-        public void SetUnavailable()
+        public Task<int> GetCurrentPowerOutput()
         {
-            lock (this)
-            {
-                foreach (var program in _programs.Where(program =>
-                             program.GetStatusAsync().Result != ProgramStatus.Running))
-                {
-                    if (program is ZigBeeProgramMockup zigBeeProgram)
-                    {
-                        zigBeeProgram.MakeUnavailable();
-                    }
-                }
-            }
+            return Task.FromResult(new Random().Next(0, _maxPowerOutput));
         }
     }
 }

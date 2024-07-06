@@ -42,14 +42,14 @@ public partial class ApplianceOverview
 
     private async Task GetAvailableControllers()
     {
-        var controllers = await Task.Run(() => applianceService.GetAvailableControllersAsync());
+        var controllers = await Task.Run(() => ApplianceService.GetAvailableControllersAsync());
         Logger.Information("Fetched {Count} controllers", controllers.Length);
         _availableControllers = controllers;
     }
 
     private async Task LoadAppliancesAsync()
     {
-        var appliances = await Task.Run(() => applianceService.GetAppliancesAsync());
+        var appliances = await Task.Run(() => ApplianceService.GetDevicesAsync());
         Logger.Information("Fetched {Count} appliances", appliances.Length);
         _displayableAppliances = appliances.Select(a => new DisplayAppliance(a, this)).ToList();
         StateHasChanged();
@@ -83,7 +83,7 @@ public partial class ApplianceOverview
     /// </summary>
     private void AddAppliance()
     {
-        var newAppliance = applianceService.AddApplianceAsync(SelectedController).Result;
+        var newAppliance = ApplianceService.AddDeviceAsync(SelectedController).Result;
         IsLoadingVisible = false;
         if (newAppliance == null)
         {
@@ -141,7 +141,7 @@ public partial class ApplianceOverview
             Appliance.Description = _ao._selectedAppliance.Validator.Description;
             _ao.IsConfigDialogVisible = false;
             _ao.IsLoadingVisible = true;
-            var result = _ao.applianceService.UpdateApplianceAsync(Appliance).Result;
+            var result = _ao.ApplianceService.UpdateDeviceAsync(Appliance).Result;
             _ao.IsLoadingVisible = false;
             if (result)
                 _ao.Snackbar.Add("Appliance updated successfully", Severity.Success);
@@ -165,7 +165,7 @@ public partial class ApplianceOverview
         public void DeleteAppliance()
         {
             _ao.IsLoadingVisible = true;
-            var result = _ao.applianceService.DeleteApplianceAsync(Appliance).Result;
+            var result = _ao.ApplianceService.DeleteDeviceAsync(Appliance).Result;
             _ao.IsLoadingVisible = false;
             if (result)
             {

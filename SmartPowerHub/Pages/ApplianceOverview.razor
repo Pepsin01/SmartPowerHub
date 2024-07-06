@@ -1,7 +1,8 @@
 ﻿@page "/ApplianceOverview"
+@using IoTControllerContracts
 @using Serilog
 @using SmartPowerHub.Data
-@inject ApplianceService applianceService
+@inject DeviceService<IAppliance> ApplianceService
 @inject ILogger Logger
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -12,7 +13,7 @@
 {
     <MudContainer>
         <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
-        <MudText Color="Color.Primary" Typo="Typo.h6">Loading Appliances...</MudText>
+        <MudText Color="Color.Primary" Typo="Typo.h6">Loading Devices...</MudText>
     </MudContainer>
     <MudOverlay Visible="true" DarkBackground="true"/>
 }
@@ -21,8 +22,6 @@
 {
     <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4">Appliance Overview</MudText>
     <MudGrid Class="p-4">
-        <MudItem xs="12">
-        </MudItem>
         <MudItem xs="12">
             <MudGrid Justify="Justify.FlexStart">
                 @foreach (var displayableAppliance in _displayableAppliances)

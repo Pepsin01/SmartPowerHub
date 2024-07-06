@@ -3,17 +3,17 @@ using SmartPowerHub.Database.Models;
 
 namespace SmartPowerHub.Database.Contexts
 {
-    public class ApplianceContext : DbContext
+    public class DeviceContext : DbContext
     {
-        public DbSet<ApplianceModel> Appliances { get; set; }
+        public DbSet<DeviceModel> Devices { get; set; }
 
-        public ApplianceContext(DbContextOptions<ApplianceContext> options) : base(options)
+        public DeviceContext(DbContextOptions<DeviceContext> options) : base(options)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ApplianceModel>();
+            modelBuilder.Entity<DeviceModel>();
         }
     }
 }

@@ -1,11 +1,207 @@
 ﻿@page "/EnergySourceManagement"
+@using IoTControllerContracts
+@using Serilog
 @using SmartPowerHub.Data
+@inject DeviceService<IBattery> BatteryService
+@inject DeviceService<IEnergySource> EnergySourceService
+@inject ILogger Logger
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Energy Source Management</PageTitle>
 
-<MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4"> Energy Source Management </MudText>
 
-@code
+
+@if (_displayableEnergySources == null || _displayableBatteries == null)
 {
-
+    <MudContainer>
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+        <MudText Color="Color.Primary" Typo="Typo.h6">Loading Devices...</MudText>
+    </MudContainer>
+    <MudOverlay Visible="true" DarkBackground="true" />
 }
+
+@if (_displayableEnergySources != null && _displayableBatteries != null)
+{
+    <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4"> Energy Source Management </MudText>
+    <MudGrid Class="p-4">
+        <MudItem xs="12">
+            <MudText Align="Align.Left" Color="Color.Primary" Typo="Typo.h6" Class="m-4"> Energy Sources: </MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudGrid Justify="Justify.FlexStart">
+                @foreach (var displayableEnergySource in _displayableEnergySources)
+                {
+                    <MudItem xs="6" sm="4" md="3" lg="2">
+                        <MudPaper Elevation="4" Class="square-paper hover-paper d-flex flex-column align-center justify-center mud-width-full rounded-lg" @onclick="displayableEnergySource.ToggleSelected">
+                            @if (!displayableEnergySource.IsSelected)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.DevicesOther" Color="Color.Primary" Style="font-size: 5rem;"/>
+                                <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h6" Class="m-4">@displayableEnergySource.Device.Name</MudText>
+                                @if (displayableEnergySource.IsOnline)
+                                {
+                                    <MudText Align="Align.Center" Color="Color.Success" Typo="Typo.body1" Class="m-4">Online</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center" Color="Color.Error" Typo="Typo.body1" Class="m-4">Offline</MudText>
+                                }
+                            }
+                            @if (displayableEnergySource.IsSelected)
+                            {
+                                <MudGrid Justify="Justify.Center">
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" OnClick="ToggleDeviceConfiguration"/>
+                                    </MudItem>
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Terminal" Variant="Variant.Filled" Color="Color.Default" Size="Size.Large" OnClick="displayableEnergySource.ShowConsole"/>
+                                    </MudItem>
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" OnClick="ToggleDeleteDialog"/>
+                                    </MudItem>
+                                </MudGrid>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                }
+                <MudItem xs="6" sm="4" md="3" lg="2">
+                    <MudPaper Elevation="0" Class="square-paper d-flex flex-column align-center justify-center mud-width-full">
+                        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="font-size: 10rem;" OnClick="ToggleEnergySourceControllerPicker"/>
+                        <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h6" Class="m-4">Add New Energy Source</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Align="Align.Left" Color="Color.Primary" Typo="Typo.h6" Class="m-4"> Batteries: </MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudGrid Justify="Justify.FlexStart">
+                @foreach (var displayableBattery in _displayableBatteries)
+                {
+                    <MudItem xs="6" sm="4" md="3" lg="2">
+                        <MudPaper Elevation="4" Class="square-paper hover-paper d-flex flex-column align-center justify-center mud-width-full rounded-lg" @onclick="displayableBattery.ToggleSelected">
+                            @if (!displayableBattery.IsSelected)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.DevicesOther" Color="Color.Primary" Style="font-size: 5rem;"/>
+                                <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h6" Class="m-4">@displayableBattery.Device.Name</MudText>
+                                @if (displayableBattery.IsOnline)
+                                {
+                                    <MudText Align="Align.Center" Color="Color.Success" Typo="Typo.body1" Class="m-4">Online</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center" Color="Color.Error" Typo="Typo.body1" Class="m-4">Offline</MudText>
+                                }
+                            }
+                            @if (displayableBattery.IsSelected)
+                            {
+                                <MudGrid Justify="Justify.Center">
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" OnClick="ToggleDeviceConfiguration"/>
+                                    </MudItem>
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Terminal" Variant="Variant.Filled" Color="Color.Default" Size="Size.Large" OnClick="displayableBattery.ShowConsole"/>
+                                    </MudItem>
+                                    <MudItem xs="12" Class="d-flex align-center justify-center mud-width-full">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" OnClick="ToggleDeleteDialog"/>
+                                    </MudItem>
+                                </MudGrid>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                }
+                <MudItem xs="6" sm="4" md="3" lg="2">
+                    <MudPaper Elevation="0" Class="square-paper d-flex flex-column align-center justify-center mud-width-full">
+                        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="font-size: 10rem;" OnClick="ToggleBatteryControllerPicker"/>
+                        <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h6" Class="m-4">Add New Battery</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+}
+
+<MudDialog @bind-IsVisible="IsChooseControllerVisible">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Choose Controller
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudSelect @bind-Value="SelectedController" T="string" Label="Controller" AnchorOrigin="Origin.BottomCenter">
+            @if(BatteryControllerPicker)
+            {
+                @foreach (var controller in _availableBatteryControllers)
+                {
+                    <MudSelectItem Value="@controller"/>
+                }
+            }
+            @if (!BatteryControllerPicker)
+            {
+                @foreach (var controller in _availableEnergySourceControllers)
+                {
+                    <MudSelectItem Value="@controller"/>
+                }
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="ToggleControllerPicker">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="SubmitSelectedController">Confirm</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="IsLoadingVisible" OnBackdropClick="() => { }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Loading...
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+    </DialogContent>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="IsConfigDialogVisible">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1" />
+            Appliance Editing
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm Model="@_selectedDevice.Validator" OnValidSubmit="_selectedDevice.OnValidEditSubmit">
+            <DataAnnotationsValidator />
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField Label="Name" HelperText="Max. 30 characters" AutoGrow
+                                  @bind-Value="_selectedDevice.Validator.Name" For="@(() => _selectedDevice.Validator.Name)" />
+                    <MudTextField Label="Description" Class="mt-3" HelperText="Max. 200 characters" AutoGrow
+                                  @bind-Value="_selectedDevice.Validator.Description" For="@(() => _selectedDevice.Validator.Description)" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton OnClick="ToggleDeviceConfiguration">Cancel</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Confirm</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    </DialogContent>
+</MudDialog>
+
+<MudDialog @bind-IsVisible="IsDeleteDialogVisible">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Delete Appliance
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body1">
+            Are you sure you want to delete this appliance?
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => IsDeleteDialogVisible = false">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="_selectedDevice.DeleteDevice">Delete</MudButton>
+    </DialogActions>
+</MudDialog>

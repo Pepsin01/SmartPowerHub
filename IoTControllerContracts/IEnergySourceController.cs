@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace IoTControllerContracts
 {
-    public interface IEnergySourceController
+    public interface IEnergySourceController : IController
     {
+        Task<IEnergySource?> AddDeviceAsync(int id);
+
+        Task<IEnergySource?> AddDeviceWithConfigAsync(int id, string configuration);
     }
 }

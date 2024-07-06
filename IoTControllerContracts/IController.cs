@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace IoTControllerContracts
 {
-    public interface IAppliance : IDevice
+    public interface IController
     {
-        Task<IProgram[]> GetProgramsAsync();
+        string Name { get; }
+        Task<bool> DeleteDeviceAsync(int id);
     }
 }

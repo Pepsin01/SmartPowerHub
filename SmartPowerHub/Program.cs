@@ -1,3 +1,4 @@
+using IoTControllerContracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor.Services;
@@ -27,15 +28,17 @@ namespace SmartPowerHub
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddSingleton<WeatherForecastService>();
-            builder.Services.AddSingleton<ApplianceService>();
+            builder.Services.AddSingleton<DeviceService<IAppliance>>();
+            builder.Services.AddSingleton<DeviceService<IBattery>>();
+            builder.Services.AddSingleton<DeviceService<IEnergySource>>();
             builder.Services.AddMudServices();
             builder.Services.AddSingleton(Log.Logger);
 
             builder.Host.UseSerilog();
 
             // Add DbContext with SQLite
-            var connectionString = builder.Configuration.GetConnectionString("ApplianceDatabase");
-            builder.Services.AddDbContext<ApplianceContext>(options =>
+            var connectionString = builder.Configuration.GetConnectionString("DevicesDatabase");
+            builder.Services.AddDbContext<DeviceContext>(options =>
                 options.UseSqlite(connectionString));
 
             var app = builder.Build();
@@ -52,7 +55,7 @@ namespace SmartPowerHub
             {
                 using var scope = app.Services.CreateScope();
                 var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<ApplianceContext>();
+                var context = services.GetRequiredService<DeviceContext>();
                 context.Database.Migrate();
                 SeedData.SeedMockAppliances(context);
             }

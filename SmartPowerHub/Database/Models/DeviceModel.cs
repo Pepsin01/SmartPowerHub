@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SmartPowerHub.Database.Models
 {
-    [Table("Appliance")]
-    public record ApplianceModel
+    [Table("Devices")]
+    public record DeviceModel
     {
         [Key]
         public int Id { get; set; }

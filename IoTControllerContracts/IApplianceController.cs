@@ -1,14 +1,9 @@
 ﻿namespace IoTControllerContracts
 {
-    public interface IApplianceController
+    public interface IApplianceController : IController
     {
-        string Name { get; }
-        Task<IAppliance?> GetApplianceAsync(int id);
+        Task<IAppliance?> AddDeviceAsync(int id);
 
-        Task<bool> DeleteApplianceAsync(int id);
-
-        Task<IAppliance?> AddApplianceAsync(int id);
-
-        Task<IAppliance?> AddApplianceWithConfigAsync(int id, string configuration);
+        Task<IAppliance?> AddDeviceWithConfigAsync(int id, string configuration);
     }
 }

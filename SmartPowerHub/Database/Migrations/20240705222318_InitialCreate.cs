@@ -11,7 +11,7 @@ namespace SmartPowerHub.Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Appliance",
+                name: "Devices",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -21,7 +21,7 @@ namespace SmartPowerHub.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Appliance", x => x.Id);
+                    table.PrimaryKey("PK_Devices", x => x.Id);
                 });
         }
 
@@ -29,7 +29,7 @@ namespace SmartPowerHub.Database.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Appliance");
+                name: "Devices");
         }
     }
 }

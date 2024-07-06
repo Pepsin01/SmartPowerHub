@@ -6,17 +6,17 @@ namespace SmartPowerHub.Database
 {
     public class SeedData
     {
-        public static void SeedMockAppliances(ApplianceContext context)
+        public static void SeedMockAppliances(DeviceContext context)
         {
-            if (context.Appliances.Any())
+            if (context.Devices.Any())
                 return;
 
-            var appliances = new List<ApplianceModel>
+            var appliances = new List<DeviceModel>
             {
 
             };
             foreach (var appliance in appliances)
-                context.Appliances.Add(appliance);
+                context.Devices.Add(appliance);
         }
     }
 }

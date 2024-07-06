@@ -12,6 +12,7 @@ namespace IoTControllerContracts
         string Name { get; set; }
         string Description { get; set; }
         string Configuration { get; }
+        IController Controller { get; }
         Task<bool> IsOnlineAsync();
         Task<bool> IsConsoleAvailableAsync();
         Task<string> SendCommandAsync(string command);
