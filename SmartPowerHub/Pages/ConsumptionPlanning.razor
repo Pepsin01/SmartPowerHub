@@ -1,10 +1,95 @@
 ﻿@page "/ConsumptionPlanning"
 @using SmartPowerHub.Data
+@using IoTControllerContracts
+@inject DeviceService<IAppliance> ApplianceService
+@inject ISnackbar Snackbar
 
 <PageTitle>Consumption Planning</PageTitle>
 
 <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4"> Consumption Planning </MudText>
+<MudGrid Class="p-4">
+    <MudItem xs="12">
+        <MudExpansionPanels>
+            @foreach (var appliance in Appliances)
+            {
+                <MudExpansionPanel Text="@appliance.Appliance.Name">
+                    @appliance.Appliance.Description
+                    <MudDataGrid T="DisplayableProgram" Items="@appliance.Programs" MultiSelection="false" SelectedItemsChanged="appliance.SelectedItemChange">
+                        <Columns>
+                            <PropertyColumn Property="p => p.Program.Name" HeaderText="Name" />
+                            <PropertyColumn Property="p => p.Program.PowerConsumptionInWattHours" HeaderText="Power Consumption" />
+                            <PropertyColumn Property="p => p.Program.RunTimeInMinutes" HeaderText="Run Time" />
+                            <PropertyColumn Property="p => p.Status" HeaderText="Duration" />
+                            <SelectColumn T="DisplayableProgram" />
+                        </Columns>
+                    </MudDataGrid>
+                </MudExpansionPanel>
+            }
+        </MudExpansionPanels>
+    </MudItem>
+</MudGrid>
 
 @code {
+    DisplayableAppliance[] Appliances;
 
+    protected override void OnInitialized()
+    {
+        _ = LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var appliances = await ApplianceService.GetDevicesAsync();
+        Appliances = appliances.Select(a => new DisplayableAppliance(a, this)).ToArray();
+        foreach (var displayableAppliance in Appliances)
+        {
+            await displayableAppliance.LoadPrograms();
+        }
+        StateHasChanged();
+    }
+
+    class DisplayableAppliance
+    {
+        private ConsumptionPlanning _co;
+        public IAppliance Appliance { get; set; }
+        public DisplayableProgram[] Programs { get; set; }
+
+        public DisplayableAppliance(IAppliance appliance, ConsumptionPlanning co)
+        {
+            _co = co;
+            Appliance = appliance;
+        }
+
+        public async Task LoadPrograms()
+        {
+            var programs = await Appliance.GetProgramsAsync();
+            Programs = programs.Select(p => new DisplayableProgram(p)).ToArray();
+            foreach (var displayableProgram in Programs)
+            {
+                await displayableProgram.LoadState();
+            }
+        }
+
+        public void SelectedItemChange(HashSet<DisplayableProgram> selectedItems)
+        {
+            _co.Snackbar.Add($"Selected programs: {string.Join(", ", selectedItems.Select(p => p.Program.Name))}");
+        }
+    }
+
+    class DisplayableProgram
+    {
+        public IProgram Program { get; set; }
+        public string Status { get; set; }
+
+        public DisplayableProgram(IProgram program)
+        {
+            Program = program;
+        }
+
+        public async Task LoadState()
+        {
+            var status = await Program.GetStatusAsync();
+            Status = status.ToString();
+        }
+    }
 }
