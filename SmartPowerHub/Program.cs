@@ -31,6 +31,7 @@ namespace SmartPowerHub
             builder.Services.AddSingleton<DeviceService<IAppliance>>();
             builder.Services.AddSingleton<DeviceService<IBattery>>();
             builder.Services.AddSingleton<DeviceService<IEnergySource>>();
+            builder.Services.AddSingleton<PlanningService>();
             builder.Services.AddMudServices();
             builder.Services.AddSingleton(Log.Logger);
 

@@ -2,12 +2,16 @@
 @using SmartPowerHub.Data
 @using IoTControllerContracts
 @inject DeviceService<IAppliance> ApplianceService
+@inject PlanningService planningService
 @inject ISnackbar Snackbar
 
 <PageTitle>Consumption Planning</PageTitle>
 
 <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4"> Consumption Planning </MudText>
 <MudGrid Class="p-4">
+    <MudItem xs="12">
+        <MudChart ChartType="ChartType.Bar" ChartSeries="@ChartData" XAxisLabels="@ChartLabels" Width="100%" Height="350px"></MudChart>
+    </MudItem>
     <MudItem xs="12">
         <MudExpansionPanels>
             @foreach (var appliance in Appliances)
@@ -16,11 +20,11 @@
                     @appliance.Appliance.Description
                     <MudDataGrid T="DisplayableProgram" Items="@appliance.Programs" MultiSelection="false" SelectedItemsChanged="appliance.SelectedItemChange">
                         <Columns>
-                            <PropertyColumn Property="p => p.Program.Name" HeaderText="Name" />
-                            <PropertyColumn Property="p => p.Program.PowerConsumptionInWattHours" HeaderText="Power Consumption" />
-                            <PropertyColumn Property="p => p.Program.RunTimeInMinutes" HeaderText="Run Time" />
-                            <PropertyColumn Property="p => p.Status" HeaderText="Duration" />
-                            <SelectColumn T="DisplayableProgram" />
+                            <PropertyColumn Property="p => p.Program.Name" HeaderText="Name"/>
+                            <PropertyColumn Property="p => p.Program.PowerConsumptionInWattHours" HeaderText="Power Consumption"/>
+                            <PropertyColumn Property="p => p.Program.RunTimeInMinutes" HeaderText="Run Time"/>
+                            <PropertyColumn Property="p => p.Status" HeaderText="Duration"/>
+                            <SelectColumn T="DisplayableProgram"/>
                         </Columns>
                     </MudDataGrid>
                 </MudExpansionPanel>
@@ -31,6 +35,8 @@
 
 @code {
     DisplayableAppliance[] Appliances;
+    List<ChartSeries> ChartData = [];
+    string[] ChartLabels = [];
 
     protected override void OnInitialized()
     {
@@ -45,6 +51,17 @@
         {
             await displayableAppliance.LoadPrograms();
         }
+
+        var plan = await planningService.GetPlan();
+        var series = new ChartSeries
+        {
+            Name = "Predicted Power Production",
+            Data = plan.Select(p => p.prediction ).ToArray()
+        };
+        ChartData.Add(series);
+
+        ChartLabels = plan.Select(p => p.time.ToString("HH")).ToArray();
+
         StateHasChanged();
     }
 
