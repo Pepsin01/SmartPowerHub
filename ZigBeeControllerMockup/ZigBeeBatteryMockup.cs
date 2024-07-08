@@ -146,14 +146,14 @@ namespace ZigBeeControllerMockup
             );
         }
 
-        public Task<int> GetCapacityAsync()
+        public Task<double> GetCapacityAsync()
         {
-            return Task.FromResult(_capacity);
+            return Task.FromResult((double)_capacity);
         }
 
-        public Task<int> GetChargeLevelAsync()
+        public Task<double> GetChargeLevelAsync()
         {
-            return Task.FromResult(new Random().Next(0, _capacity));
+            return Task.FromResult((double)new Random().Next(0, _capacity));
         }
     }
 }

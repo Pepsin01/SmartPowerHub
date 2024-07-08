@@ -8,9 +8,9 @@ namespace ZigBeeControllerMockup
         private ProgramStatus _status = ProgramStatus.Available;
         private readonly Stopwatch _stopwatch = new();
         private Thread _runtimeThread;
-        private ZigBeeApplianceMockup _appliance;
+        private readonly ZigBeeApplianceMockup _appliance;
 
-        public ZigBeeProgramMockup(string name, int powerConsumptionInWattHours, int runTimeInMinutes, ZigBeeApplianceMockup appliance)
+        public ZigBeeProgramMockup(string name, double powerConsumptionInWattHours, int runTimeInMinutes, ZigBeeApplianceMockup appliance)
         {
             Name = name;
             PowerConsumptionInWattHours = powerConsumptionInWattHours;
@@ -19,8 +19,10 @@ namespace ZigBeeControllerMockup
         }
 
         public string Name { get; }
-        public int PowerConsumptionInWattHours { get; }
+        public double PowerConsumptionInWattHours { get; }
         public int RunTimeInMinutes { get; }
+
+        public IAppliance Appliance => _appliance;
 
         public Task<ProgramStatus> GetStatusAsync()
         {

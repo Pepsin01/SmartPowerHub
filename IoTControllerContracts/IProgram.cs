@@ -15,8 +15,9 @@ namespace IoTControllerContracts
     public interface IProgram
     {
         string Name { get; }
-        int PowerConsumptionInWattHours { get; }
+        double PowerConsumptionInWattHours { get; }
         int RunTimeInMinutes { get; }
+        IAppliance Appliance { get; }
         Task<ProgramStatus> GetStatusAsync();
         Task<int> GetRemainingTimeAsync();
         Task<bool> StartAsync();

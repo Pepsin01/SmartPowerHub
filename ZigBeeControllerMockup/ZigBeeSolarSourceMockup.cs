@@ -7,7 +7,7 @@ using IoTControllerContracts;
 
 namespace ZigBeeControllerMockup
 {
-    public class ZigBeeEnergySourceMockup : IEnergySource
+    public class ZigBeeSolarSourceMockup : ISolarSource
     {
         private bool _isOnline;
         private bool _isConsoleAvailable;
@@ -40,7 +40,7 @@ namespace ZigBeeControllerMockup
             Configuration = string.Join(',', splitConfiguration);
         }
 
-        public ZigBeeEnergySourceMockup(int id, IEnergySourceController controller, string configuration = "")
+        public ZigBeeSolarSourceMockup(int id, IEnergySourceController controller, string configuration = "")
         {
             _isOnline = false;
             _isConsoleAvailable = true;
@@ -146,14 +146,14 @@ namespace ZigBeeControllerMockup
             );
         }
 
-        public Task<int> GetMaxPowerOutput()
+        public Task<double> GetMaxPowerOutput()
         {
-            return Task.FromResult(_maxPowerOutput);
+            return Task.FromResult((double)_maxPowerOutput);
         }
 
-        public Task<int> GetCurrentPowerOutput()
+        public Task<double> GetCurrentPowerOutput()
         {
-            return Task.FromResult(new Random().Next(0, _maxPowerOutput));
+            return Task.FromResult((double)new Random().Next(0, _maxPowerOutput));
         }
     }
 }

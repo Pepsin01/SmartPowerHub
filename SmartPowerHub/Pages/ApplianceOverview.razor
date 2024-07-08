@@ -11,14 +11,13 @@
 
 @if (_displayableAppliances == null)
 {
-    <MudContainer>
-        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
-        <MudText Color="Color.Primary" Typo="Typo.h6">Loading Devices...</MudText>
+    <MudContainer Style="display: flex; justify-content: center; align-items: center; height: 90vh;">
+        <div>
+            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+        </div>
     </MudContainer>
-    <MudOverlay Visible="true" DarkBackground="true"/>
 }
-
-@if (_displayableAppliances != null)
+else
 {
     <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4">Appliance Overview</MudText>
     <MudGrid Class="p-4">

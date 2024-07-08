@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace IoTControllerContracts
 {
-    public interface IBattery : IDevice
+    public interface ISolarSource : IEnergySource
     {
-        Task<double> GetCapacityAsync();
-        Task<double> GetChargeLevelAsync();
     }
 }

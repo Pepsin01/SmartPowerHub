@@ -22,14 +22,14 @@ namespace ZigBeeControllerMockup
 
         public Task<IEnergySource?> AddDeviceAsync(int id)
         {
-            var device = new ZigBeeEnergySourceMockup(id, this);
+            var device = new ZigBeeSolarSourceMockup(id, this);
             _devices.Add(device);
             return Task.FromResult<IEnergySource?>(device);
         }
 
         public Task<IEnergySource?> AddDeviceWithConfigAsync(int id, string configuration)
         {
-            var device = new ZigBeeEnergySourceMockup(id, this, configuration);
+            var device = new ZigBeeSolarSourceMockup(id, this, configuration);
             _devices.Add(device);
             return Task.FromResult<IEnergySource?>(device);
         }

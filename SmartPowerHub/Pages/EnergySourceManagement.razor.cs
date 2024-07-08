@@ -10,8 +10,8 @@ public partial class EnergySourceManagement
 {
     private string[] _availableBatteryControllers = [];
     private string[] _availableEnergySourceControllers = [];
-    private List<DisplayDevice> _displayableBatteries = [];
-    private List<DisplayDevice> _displayableEnergySources = [];
+    private List<DisplayDevice>? _displayableBatteries;
+    private List<DisplayDevice>? _displayableEnergySources;
     private DisplayDevice _selectedDevice;
     private bool IsChooseControllerVisible { get; set; }
     private bool BatteryControllerPicker { get; set; }
@@ -124,9 +124,9 @@ public partial class EnergySourceManagement
             Snackbar.Add("Device added successfully", Severity.Success);
             var newDisplayDevice = new DisplayDevice(newDevice, this);
             if (isBattery)
-                _displayableBatteries.Add(newDisplayDevice);
+                _displayableBatteries?.Add(newDisplayDevice);
             else
-                _displayableEnergySources.Add(newDisplayDevice);
+                _displayableEnergySources?.Add(newDisplayDevice);
             newDisplayDevice.ToggleSelected();
             IsConfigDialogVisible = true;
         }
@@ -233,7 +233,7 @@ public partial class EnergySourceManagement
     {
         [Required]
         [StringLength(30, ErrorMessage = "Name is too long.")]
-        public string Name { get; set; } = displayDevice.Device.Name;
+        public string Name { get; set; } = displayDevice.Device?.Name;
 
         [Required]
         [StringLength(200, ErrorMessage = "Description is too long.")]

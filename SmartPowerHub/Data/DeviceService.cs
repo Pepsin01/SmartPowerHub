@@ -19,7 +19,6 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
         _serviceProvider = serviceProvider;
         //_controllers = InitializeAvailableControllers(Path.Combine(Environment.CurrentDirectory, "IoTControllers"));
         _controllers = new List<IController>();
-        using var scope = _serviceProvider.CreateScope();
         ControllerService.UpdateControllers<TDevice>(_controllers);
         _devices = InitializeDevices();
     }

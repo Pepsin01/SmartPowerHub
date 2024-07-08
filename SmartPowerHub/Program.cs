@@ -27,7 +27,6 @@ namespace SmartPowerHub
             // Add services to the container.
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddSingleton<WeatherForecastService>();
             builder.Services.AddSingleton<DeviceService<IAppliance>>();
             builder.Services.AddSingleton<DeviceService<IBattery>>();
             builder.Services.AddSingleton<DeviceService<IEnergySource>>();

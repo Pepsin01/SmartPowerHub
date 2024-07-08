@@ -8,7 +8,7 @@ namespace SmartPowerHub.Pages;
 public partial class ApplianceOverview
 {
     private string[] _availableControllers = [];
-    private List<DisplayAppliance> _displayableAppliances = [];
+    private List<DisplayAppliance>? _displayableAppliances;
     private DisplayAppliance _selectedAppliance;
     private bool IsChooseControllerVisible { get; set; }
     private bool IsLoadingVisible { get; set; }
@@ -93,7 +93,7 @@ public partial class ApplianceOverview
         {
             Snackbar.Add("Appliance added successfully", Severity.Success);
             var newDisplayAppliance = new DisplayAppliance(newAppliance, this);
-            _displayableAppliances.Add(newDisplayAppliance);
+            _displayableAppliances?.Add(newDisplayAppliance);
             newDisplayAppliance.ToggleSelected();
             IsConfigDialogVisible = true;
         }

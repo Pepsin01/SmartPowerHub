@@ -8,7 +8,7 @@ namespace IoTControllerContracts
 {
     public interface IEnergySource : IDevice
     {
-        Task<int> GetMaxPowerOutput();
-        Task<int> GetCurrentPowerOutput();
+        Task<double> GetMaxPowerOutput();
+        Task<double> GetCurrentPowerOutput();
     }
 }

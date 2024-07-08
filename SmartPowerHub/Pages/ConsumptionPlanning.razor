@@ -1,42 +1,55 @@
 ﻿@page "/ConsumptionPlanning"
-@using SmartPowerHub.Data
 @using IoTControllerContracts
+@using SmartPowerHub.Data
 @inject DeviceService<IAppliance> ApplianceService
 @inject PlanningService planningService
 @inject ISnackbar Snackbar
 
 <PageTitle>Consumption Planning</PageTitle>
 
-<MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4"> Consumption Planning </MudText>
-<MudGrid Class="p-4">
-    <MudItem xs="12">
-        <MudChart ChartType="ChartType.Bar" ChartSeries="@ChartData" XAxisLabels="@ChartLabels" Width="100%" Height="350px"></MudChart>
-    </MudItem>
-    <MudItem xs="12">
-        <MudExpansionPanels>
-            @foreach (var appliance in Appliances)
-            {
-                <MudExpansionPanel Text="@appliance.Appliance.Name">
-                    @appliance.Appliance.Description
-                    <MudDataGrid T="DisplayableProgram" Items="@appliance.Programs" MultiSelection="false" SelectedItemsChanged="appliance.SelectedItemChange">
-                        <Columns>
-                            <PropertyColumn Property="p => p.Program.Name" HeaderText="Name"/>
-                            <PropertyColumn Property="p => p.Program.PowerConsumptionInWattHours" HeaderText="Power Consumption"/>
-                            <PropertyColumn Property="p => p.Program.RunTimeInMinutes" HeaderText="Run Time"/>
-                            <PropertyColumn Property="p => p.Status" HeaderText="Duration"/>
-                            <SelectColumn T="DisplayableProgram"/>
-                        </Columns>
-                    </MudDataGrid>
-                </MudExpansionPanel>
-            }
-        </MudExpansionPanels>
-    </MudItem>
-</MudGrid>
+@if (_appliances == null)
+{
+    <MudContainer Style="display: flex; justify-content: center; align-items: center; height: 90vh;">
+        <div>
+            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+        </div>
+    </MudContainer>
+
+}
+else
+{
+    <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4"> Consumption Planning </MudText>
+    <MudGrid Class="p-4">
+        <MudItem xs="12">
+            <MudChart ChartType="ChartType.Bar" ChartSeries="@_chartData" XAxisLabels="@_chartLabels" Width="100%" Height="350px"></MudChart>
+        </MudItem>
+        <MudItem xs="12">
+            <MudExpansionPanels>
+                @foreach (var appliance in _appliances)
+                {
+                    <MudExpansionPanel Text="@appliance.Appliance.Name">
+                        @appliance.Appliance.Description
+                        <MudDataGrid T="DisplayableProgram" Items="@appliance.Programs" MultiSelection="false" SelectedItemsChanged="appliance.SelectedItemChange">
+                            <Columns>
+                                <PropertyColumn Property="p => p.Program.Name" HeaderText="Name"/>
+                                <PropertyColumn Property="p => p.Program.PowerConsumptionInWattHours" HeaderText="Power Consumption"/>
+                                <PropertyColumn Property="p => p.Program.RunTimeInMinutes" HeaderText="Run Time"/>
+                                <PropertyColumn Property="p => p.Status" HeaderText="Duration"/>
+                                <SelectColumn T="DisplayableProgram"/>
+                            </Columns>
+                        </MudDataGrid>
+                    </MudExpansionPanel>
+                }
+            </MudExpansionPanels>
+        </MudItem>
+    </MudGrid>
+}
 
 @code {
-    DisplayableAppliance[] Appliances;
-    List<ChartSeries> ChartData = [];
-    string[] ChartLabels = [];
+    DisplayableAppliance[]? _appliances;
+    readonly List<ChartSeries> _chartData = [];
+    string[]? _chartLabels;
+    bool _loaded = false;
 
     protected override void OnInitialized()
     {
@@ -45,30 +58,32 @@
 
     private async Task LoadData()
     {
-        var appliances = await ApplianceService.GetDevicesAsync();
-        Appliances = appliances.Select(a => new DisplayableAppliance(a, this)).ToArray();
-        foreach (var displayableAppliance in Appliances)
-        {
-            await displayableAppliance.LoadPrograms();
-        }
+        var appliances = await Task.Run(() => ApplianceService.GetDevicesAsync());
+        _appliances = appliances.Select(a => new DisplayableAppliance(a, this)).ToArray();
+        Task.WaitAll(_appliances.Select(a => a.LoadPrograms()).ToArray());
 
         var plan = await planningService.GetPlan();
         var series = new ChartSeries
         {
             Name = "Predicted Power Production",
-            Data = plan.Select(p => p.prediction ).ToArray()
+            Data = plan.TimeSlots.Select(t => t.PowerCapacity).ToArray()
         };
-        ChartData.Add(series);
+        _chartData.Add(series);
 
-        ChartLabels = plan.Select(p => p.time.ToString("HH")).ToArray();
+        _chartLabels = new string[plan.TimeSlots.Length];
+
+        for (var i = 0; i < plan.TimeSlots.Length; i++)
+            _chartLabels[i] = (plan.StartTime + TimeSpan.FromMinutes(i * plan.TimeSlotLength)).ToString("HH");
+
+        _loaded = true;
 
         StateHasChanged();
     }
 
     class DisplayableAppliance
     {
-        private ConsumptionPlanning _co;
-        public IAppliance Appliance { get; set; }
+        private readonly ConsumptionPlanning _co;
+        public IAppliance Appliance { get; }
         public DisplayableProgram[] Programs { get; set; }
 
         public DisplayableAppliance(IAppliance appliance, ConsumptionPlanning co)
@@ -95,7 +110,7 @@
 
     class DisplayableProgram
     {
-        public IProgram Program { get; set; }
+        public IProgram Program { get; }
         public string Status { get; set; }
 
         public DisplayableProgram(IProgram program)
@@ -109,4 +124,5 @@
             Status = status.ToString();
         }
     }
+
 }
