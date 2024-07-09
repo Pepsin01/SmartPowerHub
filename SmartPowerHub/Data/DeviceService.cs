@@ -24,54 +24,6 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
     }
 
     /// <summary>
-    ///     Initializes all available controllers from the specified path
-    /// </summary>
-    /// <param name="path"> The path to the directory containing the controller dlls </param>
-    /// <returns> A list of all found controllers </returns>
-    private List<IApplianceController> InitializeAvailableControllers(string path)
-    {
-        Log.Information($"Searching for controllers in {path}");
-        var controllers = new List<IApplianceController>();
-        var files = Directory.GetFiles(path, "*.dll");
-        foreach (var file in files)
-            try
-            {
-                Log.Information($"Found controller dll: {file}");
-                var assembly = Assembly.LoadFrom(file);
-                var types = assembly.GetTypes();
-                foreach (var type in types)
-                {
-                    //if (type.GetInterface(nameof(IApplianceController)) == null) continue;
-                    if (Activator.CreateInstance(type) is not IApplianceController controller) continue;
-                    controllers.Add(controller);
-                    Log.Information($"Found controller: {controller.Name}");
-                }
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                var sb = new StringBuilder();
-                foreach (var exSub in ex.LoaderExceptions)
-                {
-                    sb.AppendLine(exSub.Message);
-                    if (exSub is FileNotFoundException exFileNotFound)
-                        if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
-                        {
-                            sb.AppendLine("Fusion Log:");
-                            sb.AppendLine(exFileNotFound.FusionLog);
-                        }
-
-                    sb.AppendLine();
-                }
-
-                var errorMessage = sb.ToString();
-
-                Log.Error(errorMessage);
-            }
-
-        return controllers;
-    }
-
-    /// <summary>
     ///    Initializes all devices from the database
     /// </summary>
     /// <returns> A list of devices initialized from the database </returns>
@@ -96,6 +48,27 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
         return devices;
     }
 
+    private void UpdateControllers()
+    {
+        ControllerService.UpdateControllers<TDevice>(_controllers);
+    }
+
+    private void TryInitializeNewDevices()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DeviceContext>();
+        var deviceRecords = context.Devices.ToList();
+
+        foreach (var record in deviceRecords)
+        {
+            if (_devices.Any(d => d.Id == record.Id))
+                continue;
+
+            var device = InitializeFromRecord(record);
+            if (device != null)
+                _devices.Add(device);
+        }
+    }
     private TDevice? InitializeFromRecord(DeviceModel record)
     {
         var controller = _controllers.FirstOrDefault(c => c.Name == record.ControllerName);
@@ -124,6 +97,8 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
     /// <returns> An array of devices of the specified type </returns>
     public Task<TDevice[]> GetDevicesAsync()
     {
+        UpdateControllers();
+        TryInitializeNewDevices();
         return Task.FromResult(_devices.ToArray());
     }
 
