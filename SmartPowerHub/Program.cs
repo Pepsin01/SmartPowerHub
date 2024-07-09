@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using SmartPowerHub.Database;
 using SmartPowerHub.Database.Contexts;
+using System.Net;
+using System.Net.Security;
 
 namespace SmartPowerHub
 {
@@ -31,8 +33,16 @@ namespace SmartPowerHub
             builder.Services.AddSingleton<DeviceService<IBattery>>();
             builder.Services.AddSingleton<DeviceService<IEnergySource>>();
             builder.Services.AddSingleton<PlanningService>();
+            builder.Services.AddSingleton<ControllerService>();
             builder.Services.AddMudServices();
             builder.Services.AddSingleton(Log.Logger);
+
+            builder.Services.AddScoped(sp => new HttpClient
+            {
+                BaseAddress = new Uri("https://localhost:7019/")
+            });
+            builder.WebHost.UseUrls("http://+:7019", "https://+:443");
+
 
             builder.Host.UseSerilog();
 

@@ -1,0 +1,134 @@
+﻿@page "/ControllerManagement"
+@using System.Net.Http.Headers
+@using SmartPowerHub.Data
+@inject ISnackbar Snackbar
+@inject ControllerService ControllerService
+@inject HttpClient HttpClient
+
+<MudStack Class="ma-4">
+    <MudFileUpload T="IReadOnlyList<IBrowserFile>"
+                   @ref="@_fileUpload"
+                   OnFilesChanged="OnInputFileChanged"
+                   AppendMultipleFiles
+                   Hidden="@false"
+                   InputClass="absolute mud-width-full mud-height-full overflow-hidden z-10"
+                   InputStyle="opacity:0"
+                   tabindex="-1"
+                   @ondrop="@ClearDragClass"
+                   @ondragenter="@SetDragClass"
+                   @ondragleave="@ClearDragClass"
+                   @ondragend="@ClearDragClass"
+                   Accept=".dll">
+        <ActivatorContent>
+            <MudPaper Height="300px"
+                      Outlined="true"
+                      Class="@_dragClass">
+                <MudText Typo="Typo.h6">
+                    Drag and drop .dll files here or click
+                </MudText>
+                @foreach (var file in _fileNames)
+                {
+                    <MudChip T="string"
+                             Color="Color.Dark"
+                             Text="@file"
+                             tabindex="-1"/>
+                }
+            </MudPaper>
+        </ActivatorContent>
+    </MudFileUpload>
+    <MudToolBar Gutters="@false"
+                Class="relative d-flex justify-end gap-4">
+        <MudButton Color="Color.Primary"
+                   Disabled="@(!_fileNames.Any())"
+                   OnClick="@Upload"
+                   Variant="Variant.Filled">
+            Upload
+        </MudButton>
+        <MudButton Color="Color.Error"
+                   Disabled="@(!_fileNames.Any())"
+                   OnClick="@ClearAsync"
+                   Variant="Variant.Filled">
+            Clear
+        </MudButton>
+    </MudToolBar>
+</MudStack>
+
+@code {
+    private const string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
+    private string _dragClass = DefaultDragClass;
+    private readonly List<string> _fileNames = new();
+    private MudFileUpload<IReadOnlyList<IBrowserFile>>? _fileUpload;
+
+    private async Task ClearAsync()
+    {
+        await (_fileUpload?.ClearAsync() ?? Task.CompletedTask);
+        _fileNames.Clear();
+        ClearDragClass();
+    }
+
+    private void OnInputFileChanged(InputFileChangeEventArgs e)
+    {
+        ClearDragClass();
+        var files = e.GetMultipleFiles();
+        foreach (var file in files)
+        {
+            if (Path.GetExtension(file.Name) == ".dll")
+            {
+                _fileNames.Add(file.Name);
+            }
+        }
+    }
+
+    private async Task Upload()
+    {
+        if (_fileUpload?.Files == null || !_fileUpload.Files.Any())
+        {
+            Snackbar.Add("No files selected for upload", Severity.Error);
+            return;
+        }
+
+        using var content = new MultipartFormDataContent();
+        foreach (var file in _fileUpload.Files)
+        {
+            var fileContent = new StreamContent(file.OpenReadStream(maxAllowedSize: 50000000)); // 50MB limit, adjust as needed
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            content.Add(fileContent, "files", file.Name);
+        }
+
+        try
+        {
+            var handler = new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            using var httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://localhost:7019/") // Ensure this is the correct address for your API.
+            };
+            var response = await httpClient.PostAsync("api/upload", content);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Files uploaded successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to upload files", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void SetDragClass()
+    {
+        _dragClass = $"{DefaultDragClass} mud-border-primary";
+    }
+
+    private void ClearDragClass()
+    {
+        _dragClass = DefaultDragClass;
+    }
+
+}
