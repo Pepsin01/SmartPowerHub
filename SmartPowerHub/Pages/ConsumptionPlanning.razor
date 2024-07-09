@@ -19,37 +19,44 @@
 else
 {
     <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4"> Consumption Planning </MudText>
-    <MudGrid Class="p-4">
-        <MudItem xs="12">
-            <MudChart ChartType="ChartType.Bar" ChartSeries="@_chartData" XAxisLabels="@_chartLabels" Width="100%" Height="350px"></MudChart>
-        </MudItem>
-        <MudItem xs="12">
-            <MudExpansionPanels>
-                @foreach (var appliance in _appliances)
-                {
-                    <MudExpansionPanel Text="@appliance.Appliance.Name">
-                        @appliance.Appliance.Description
-                        <MudDataGrid T="DisplayableProgram" Items="@appliance.Programs" MultiSelection="false" SelectedItemsChanged="appliance.SelectedItemChange">
-                            <Columns>
-                                <PropertyColumn Property="p => p.Program.Name" HeaderText="Name"/>
-                                <PropertyColumn Property="p => p.Program.PowerConsumptionInWattHours" HeaderText="Power Consumption"/>
-                                <PropertyColumn Property="p => p.Program.RunTimeInMinutes" HeaderText="Run Time"/>
-                                <PropertyColumn Property="p => p.Status" HeaderText="Duration"/>
-                                <SelectColumn T="DisplayableProgram"/>
-                            </Columns>
-                        </MudDataGrid>
-                    </MudExpansionPanel>
-                }
-            </MudExpansionPanels>
-        </MudItem>
-    </MudGrid>
+    <MudDropContainer T="DisplayableProgram" Items="_items" ItemIsDisabled="@(item => item.IdDisabled)" ItemsSelector="@((item, dropzone) => item.Selector == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
+        <ChildContent>
+            <MudGrid Class="p-4">
+                <MudItem xs="12">
+                    <MudChart ChartType="ChartType.Bar" ChartSeries="@_chartData" XAxisLabels="@_chartLabels" Width="100%" Height="350px"></MudChart>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDropZone T="DisplayableProgram" Identifier="PlannerZone" Class="rounded mud-background-gray pa-6 ma-8 flex-grow-1">
+                        <MudText Typo="Typo.h6" Class="mb-4">Here drop the programs you want to plan.</MudText>
+                    </MudDropZone>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudExpansionPanels>
+                        @foreach (var appliance in _appliances)
+                        {
+                            <MudExpansionPanel Text="@appliance.Appliance.Name">
+                                @appliance.Appliance.Description
+                                <MudDropZone T="DisplayableProgram" Identifier="@appliance.DropZoneId" Class="rounded mud-background-gray pa-6 ma-8 flex-grow-1"></MudDropZone>
+                            </MudExpansionPanel>
+                        }
+                    </MudExpansionPanels>
+                </MudItem>
+            </MudGrid>
+        </ChildContent>
+        <ItemRenderer>
+            <MudPaper Elevation="25" Class="pa-4 my-4">
+                Program: @context.Program.Name, Power Consumption: @context.Program.PowerConsumptionInWattHours Wh, Run Time: @context.Program.RunTimeInMinutes min, Status: @context.Status
+            </MudPaper>
+        </ItemRenderer>
+    </MudDropContainer>
 }
 
 @code {
     DisplayableAppliance[]? _appliances;
+    List<DisplayableProgram> _items = [];
     readonly List<ChartSeries> _chartData = [];
     string[]? _chartLabels;
-    bool _loaded = false;
+
 
     protected override void OnInitialized()
     {
@@ -75,7 +82,7 @@ else
         for (var i = 0; i < plan.TimeSlots.Length; i++)
             _chartLabels[i] = (plan.StartTime + TimeSpan.FromMinutes(i * plan.TimeSlotLength)).ToString("HH");
 
-        _loaded = true;
+
 
         StateHasChanged();
     }
@@ -85,6 +92,7 @@ else
         private readonly ConsumptionPlanning _co;
         public IAppliance Appliance { get; }
         public DisplayableProgram[] Programs { get; set; }
+        public string DropZoneId => "Drop zone: " + Appliance.Id;
 
         public DisplayableAppliance(IAppliance appliance, ConsumptionPlanning co)
         {
@@ -95,27 +103,60 @@ else
         public async Task LoadPrograms()
         {
             var programs = await Appliance.GetProgramsAsync();
-            Programs = programs.Select(p => new DisplayableProgram(p)).ToArray();
+            Programs = programs.Select(p => new DisplayableProgram(p, DropZoneId, this)).ToArray();
             foreach (var displayableProgram in Programs)
             {
                 await displayableProgram.LoadState();
             }
+            _co._items.AddRange(Programs);
         }
 
         public void SelectedItemChange(HashSet<DisplayableProgram> selectedItems)
         {
             _co.Snackbar.Add($"Selected programs: {string.Join(", ", selectedItems.Select(p => p.Program.Name))}");
         }
+
+        public void RefreshEnabledPrograms()
+        {
+            bool hasPlannedProgram = false;
+            foreach (var program in Programs)
+            {
+                program.IdDisabled = false;
+                if (program.Selector != DropZoneId)
+                    hasPlannedProgram = true;
+            }
+
+            if (!hasPlannedProgram)
+                return;
+
+            foreach (var program in Programs)
+            {
+                program.IdDisabled = program.Selector == DropZoneId;
+            }
+        }
     }
+
+    private void ItemUpdated(MudItemDropInfo<DisplayableProgram> dropItem)
+    {
+        dropItem.Item.Selector = dropItem.DropzoneIdentifier;
+        dropItem.Item.DP.RefreshEnabledPrograms();
+    }
+
+    private 
 
     class DisplayableProgram
     {
         public IProgram Program { get; }
         public string Status { get; set; }
+        public string Selector { get; set; }
+        public DisplayableAppliance DP { get; }
+        public bool IdDisabled { get; set; }
 
-        public DisplayableProgram(IProgram program)
+        public DisplayableProgram(IProgram program, string selector, DisplayableAppliance dp)
         {
             Program = program;
+            Selector = selector;
+            DP = dp;
         }
 
         public async Task LoadState()
