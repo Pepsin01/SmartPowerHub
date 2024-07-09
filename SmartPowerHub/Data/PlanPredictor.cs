@@ -30,7 +30,7 @@ public class PlanPredictor(IServiceProvider serviceProvider)
 
         var timeSlotsArray =
             GenerateNormalDistributionValues(startTime, dawn, dusk, timeSlots, timeSlotLength, maxValue);
-        return new ProductionPlan(timeSlotsArray, timeSlotLength, startTime);
+        return new ProductionPlan("Normal Solar Plan Prediction", timeSlotsArray, timeSlotLength, startTime);
     }
 
     public ProductionPlan GenerateCloudinessSolarPlan(DateTime startTime, int timeSlots, int timeSlotLength)

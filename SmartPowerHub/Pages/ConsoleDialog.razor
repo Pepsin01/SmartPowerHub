@@ -12,7 +12,7 @@
                 </MudPaper>
             </MudItem>
             <MudItem xs="11">
-                <MudForm @ref="_form" @bind-IsValid="@_success" OnValidSubmit="ValidateForm">
+                <MudForm @ref="_form" @bind-Visible="@_success" OnValidSubmit="ValidateForm">
                     <MudTextField T="string" Label="Terminal Input" Required="true" @bind-Value="_terminalInput" Immediate="true" OnKeyDown="HandleKeyDown" Disabled="@_isDisabled" @ref="_inputRef" />
                 </MudForm>
             </MudItem>

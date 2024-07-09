@@ -68,7 +68,7 @@ else
     </MudGrid>
 }
 
-<MudDialog @bind-IsVisible="IsChooseControllerVisible">
+<MudDialog @bind-Visible="IsChooseControllerVisible">
     <TitleContent>
         <MudText Typo="Typo.h6">
             Choose Controller
@@ -88,7 +88,7 @@ else
     </DialogActions>
 </MudDialog>
 
-<MudDialog @bind-IsVisible="IsLoadingVisible" OnBackdropClick="() => { }">
+<MudDialog @bind-Visible="IsLoadingVisible" OnBackdropClick="() => { }">
     <TitleContent>
         <MudText Typo="Typo.h6">
             Loading...
@@ -99,7 +99,7 @@ else
     </DialogContent>
 </MudDialog>
 
-<MudDialog @bind-IsVisible="IsConfigDialogVisible">
+<MudDialog @bind-Visible="IsConfigDialogVisible">
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1"/>
@@ -125,7 +125,7 @@ else
     </DialogContent>
 </MudDialog>
 
-<MudDialog @bind-IsVisible="IsDeleteDialogVisible">
+<MudDialog @bind-Visible="IsDeleteDialogVisible">
     <TitleContent>
         <MudText Typo="Typo.h6">
             Delete Appliance
