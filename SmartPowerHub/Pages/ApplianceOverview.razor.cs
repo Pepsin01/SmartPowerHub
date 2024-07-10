@@ -44,6 +44,9 @@ public partial class ApplianceOverview
     {
         var controllers = await Task.Run(() => ApplianceService.GetAvailableControllersAsync());
         Logger.Information("Fetched {Count} controllers", controllers.Length);
+        foreach (var controller in controllers) {
+            Logger.Information("Controller: {Name}", controller);
+        }
         _availableControllers = controllers;
     }
 

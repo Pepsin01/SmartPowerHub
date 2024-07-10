@@ -36,7 +36,10 @@ namespace SmartPowerHub.Data
 
                         // add controller to list if there is no controller with the same name
                         if (!controllers.Exists(c => c.Name == controller.Name))
+                        {
                             controllers.Add(controller);
+                            Log.Information($"Added controller {controller.Name} to list.");
+                        }
                     }
                 }
                 catch (ReflectionTypeLoadException ex)
