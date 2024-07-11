@@ -96,7 +96,12 @@ public partial class ConsumptionPlanning
 
     private void SendPlanSetup()
     {
+        _ = Task.Run(SendPlanSetupAsync);
         IsPlanSetUpDialogVisible = false;
+    }
+
+    private async Task SendPlanSetupAsync()
+    {
         IsLoadingVisible = true;
 
         Log.Information("PlanType: {PlanType}, StartTime: {StartTime}, PlanDuration: {PlanDuration}",
@@ -108,9 +113,8 @@ public partial class ConsumptionPlanning
         ProductionPlan plan = null;
 
         if (_planSetupModel.PlanType == "Normal Solar Plan")
-            plan = planningService
-                .PlanProgramsNormalSolar(programs, _planSetupModel.StartTime, 15, _planSetupModel.PlanDuration * 4)
-                .Result;
+            plan = await planningService
+                .PlanProgramsNormalSolar(programs, _planSetupModel.StartTime, 15, _planSetupModel.PlanDuration * 4);
 
         UpdateChart(plan);
 
@@ -211,19 +215,22 @@ public partial class ConsumptionPlanning
             await LoadState();
             if (Status == ProgramStatus.Available)
             {
+                bool isScheduled = false;
                 foreach (var scheduledProgram in DP.Co._scheduledPrograms)
                 {
                     if (scheduledProgram.Program == Program)
                     {
+                        isScheduled = true;
                         SetPlannedStartTime(scheduledProgram.StartTime);
                         Selector = DP.Co._readyZone;
                         Log.Information("Program {ProgramName} is scheduled at {StartTime}", Program.Name,
                             scheduledProgram.StartTime);
                     }
-                    else
-                    {
-                        SetPlannedStartTime(null);
-                    }
+                }
+                if(!isScheduled && Selector != DP.Co._plannerZone)
+                {
+                    SetPlannedStartTime(null);
+                    Selector = DP.DropZoneId;
                 }
             }
             else if (Status == ProgramStatus.Unavailable)

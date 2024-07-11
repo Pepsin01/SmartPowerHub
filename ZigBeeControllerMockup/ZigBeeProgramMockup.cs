@@ -42,7 +42,7 @@ namespace ZigBeeControllerMockup
             {
                 if (_status == ProgramStatus.Running)
                     return Task.FromResult(false);
-                _stopwatch.Start();
+                _stopwatch.Restart();
                 _runtimeThread = new Thread(() =>
                 {
                     while (_status == ProgramStatus.Running)
