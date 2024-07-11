@@ -20,7 +20,7 @@
 else
 {
     <MudText Align="Align.Center" Color="Color.Primary" Typo="Typo.h2" Class="m-4"> Consumption Planning </MudText>
-    <MudDropContainer @ref="_dropContainer" T="DisplayableProgram" Items="_displayedPrograms" ItemDisabled="@((item) => item.IsDisabled)" ItemsSelector="@((item, dropzone) => item.Selector == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
+    <MudDropContainer @ref="_dropContainer" T="DisplayableProgram" Items="_displayedPrograms" ItemIsDisabled="@((item) => item.IsDisabled)" ItemsSelector="@((item, dropzone) => item.Selector == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
         <ChildContent>
             <MudGrid Class="p-4">
                 <MudItem xs="12">
@@ -103,7 +103,7 @@ else
         </ItemRenderer>
     </MudDropContainer>
 
-    <MudDialog @bind-Visible="IsPlanSetUpDialogVisible">
+    <MudDialog @bind-IsVisible="IsPlanSetUpDialogVisible">
         <TitleContent>
             <MudText Typo="Typo.h6">
                 <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1" />
@@ -118,8 +118,8 @@ else
                         <MudSelect T="string" Label="Plan Type" AnchorOrigin="Origin.BottomCenter"
                                    HelperText="Select the type of plan you want to plan your appliances for!"
                                    @bind-Value="_planSetupModel.PlanType" For="@(() => _planSetupModel.PlanType)">
-                            <MudSelectItem Value="@("Normal Solar Plan")" />
-                            <MudSelectItem Value="@("Cloudiness Solar Plan")" />
+                            <MudSelectItem Value="@("Normal Solar Plan")">Normal Solar Plan</MudSelectItem>
+                            <MudSelectItem Value="@("Cloudiness Solar Plan")">Cloudiness Solar Plan</MudSelectItem>
                         </MudSelect>
                         <MudTextField T="DateTime" Format="s" Label="Start Time" InputType="InputType.DateTimeLocal"
                                       HelperText="Must be within 48 hours from now!"
@@ -142,7 +142,7 @@ else
             </EditForm>
         </DialogContent>
     </MudDialog>
-    <MudDialog @bind-Visible="IsLoadingVisible" OnBackdropClick="() => {}">
+    <MudDialog @bind-IsVisible="IsLoadingVisible" OnBackdropClick="() => {}">
         <TitleContent>
             <MudText Typo="Typo.h6">
                 Loading...

@@ -121,26 +121,26 @@ else
     </MudGrid>
 }
 
-<MudDialog @bind-Visible="IsChooseControllerVisible">
+<MudDialog @bind-IsVisible="IsChooseControllerVisible">
     <TitleContent>
         <MudText Typo="Typo.h6">
             Choose Controller
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudSelect @bind-Value="SelectedController" T="string" Label="Controller" AnchorOrigin="Origin.BottomCenter">
+        <MudSelect @bind-IsVisible="SelectedController" T="string" Label="Controller" AnchorOrigin="Origin.BottomCenter">
             @if(BatteryControllerPicker)
             {
                 @foreach (var controller in _availableBatteryControllers)
                 {
-                    <MudSelectItem Value="@controller"/>
+                    <MudSelectItem Value="@controller">@controller</MudSelectItem>
                 }
             }
             else
             {
                 @foreach (var controller in _availableEnergySourceControllers)
                 {
-                    <MudSelectItem Value="@controller"/>
+                    <MudSelectItem Value="@controller">@controller</MudSelectItem>
                 }
             }
         </MudSelect>
@@ -151,7 +151,7 @@ else
     </DialogActions>
 </MudDialog>
 
-<MudDialog @bind-Visible="IsLoadingVisible" OnBackdropClick="() => { }">
+<MudDialog @bind-IsVisible="IsLoadingVisible" OnBackdropClick="() => { }">
     <TitleContent>
         <MudText Typo="Typo.h6">
             Loading...
@@ -162,7 +162,7 @@ else
     </DialogContent>
 </MudDialog>
 
-<MudDialog @bind-Visible="IsConfigDialogVisible">
+<MudDialog @bind-IsVisible="IsConfigDialogVisible">
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-3 mb-n1" />
@@ -188,7 +188,7 @@ else
     </DialogContent>
 </MudDialog>
 
-<MudDialog @bind-Visible="IsDeleteDialogVisible">
+<MudDialog @bind-IsVisible="IsDeleteDialogVisible">
     <TitleContent>
         <MudText Typo="Typo.h6">
             Delete Appliance
