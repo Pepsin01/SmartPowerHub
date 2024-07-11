@@ -95,3 +95,8 @@ a, .btn-link {
     flex-direction: column;
     justify-content: center;
 }
+.full-width-chart {
+    width: 100%;
+    margin: 0 auto;
+    display: block;
+}

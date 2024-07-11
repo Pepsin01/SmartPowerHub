@@ -81,11 +81,14 @@ public class PlanningService
     {
         var plan = _planPredictor.GenerateNormalSolarPlan(startTime, timeSlotLength, timeSlotCount);
 
-        var scheduledPrograms = Planner.SchedulePrograms(programs, plan);
+        if (programs.Length > 0)
+        {
+            var scheduledPrograms = Planner.SchedulePrograms(programs, plan);
 
-        Log.Information("Planned {ProgramCount} programs for normal solar production", scheduledPrograms.Length);
+            Log.Information("Planned {ProgramCount} programs for normal solar production", scheduledPrograms.Length);
 
-        SaveScheduledPrograms(scheduledPrograms);
+            SaveScheduledPrograms(scheduledPrograms);
+        }
 
         return Task.FromResult(plan);
     }

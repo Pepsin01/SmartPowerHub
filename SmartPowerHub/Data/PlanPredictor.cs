@@ -12,10 +12,10 @@ public class PlanPredictor(IServiceProvider serviceProvider)
     /// Generates a production plan for a normal solar day and currently available solar sources.
     /// </summary>
     /// <param name="startTime"> The start time of the production plan </param>
-    /// <param name="timeSlots"> The number of time slots to generate </param>
     /// <param name="timeSlotLength"> The length of each time slot in minutes </param>
+    /// <param name="timeSlotsCount"> The number of time slots to generate </param>
     /// <returns> A production plan for a normal solar day </returns>
-    public ProductionPlan GenerateNormalSolarPlan(DateTime startTime, int timeSlots, int timeSlotLength)
+    public ProductionPlan GenerateNormalSolarPlan(DateTime startTime, int timeSlotLength, int timeSlotsCount)
     {
         using var scope = serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DeviceService<IEnergySource>>();
@@ -29,13 +29,13 @@ public class PlanPredictor(IServiceProvider serviceProvider)
         var dusk = new TimeSpan(21, 0, 0);
 
         var timeSlotsArray =
-            GenerateNormalDistributionValues(startTime, dawn, dusk, timeSlots, timeSlotLength, maxValue);
+            GenerateNormalDistributionValues(startTime, dawn, dusk, timeSlotsCount, timeSlotLength, maxValue);
         return new ProductionPlan("Normal Solar Plan Prediction", timeSlotsArray, timeSlotLength, startTime);
     }
 
-    public ProductionPlan GenerateCloudinessSolarPlan(DateTime startTime, int timeSlots, int timeSlotLength)
+    public ProductionPlan GenerateCloudinessSolarPlan(DateTime startTime, int timeSlotLength, int timeSlotsCount)
     {
-        return GenerateNormalSolarPlan(startTime, timeSlots, timeSlotLength);
+        return GenerateNormalSolarPlan(startTime, timeSlotLength, timeSlotsCount);
     }
 
     /// <summary>

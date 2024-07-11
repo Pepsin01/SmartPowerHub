@@ -31,7 +31,7 @@ else
                     }
                     else
                     {
-                        <MudChart ChartType="ChartType.Bar" ChartSeries="@_chartData" XAxisLabels="@_chartLabels" Width="100%" Height="350px"></MudChart>
+                        <MudChart ChartOptions="@(new ChartOptions {ChartPalette = ["#fcd703"]})" ChartType="ChartType.Bar" ChartSeries="@_chartData" XAxisLabels="@_chartLabels" Width="100%" Height="350px"></MudChart>
                     }
                 </MudItem>
                 <MudItem xs="12">
@@ -145,7 +145,7 @@ else
     <MudDialog @bind-IsVisible="IsLoadingVisible" OnBackdropClick="() => {}">
         <TitleContent>
             <MudText Typo="Typo.h6">
-                Loading...
+                Planning...
             </MudText>
         </TitleContent>
         <DialogContent>

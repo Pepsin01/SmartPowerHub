@@ -65,8 +65,12 @@ public partial class ConsumptionPlanning
 
         _chartLabels = new string[plan.TimeSlots.Length];
 
-        for (var i = 0; i < plan.TimeSlots.Length; i++)
-            _chartLabels[i] = (plan.StartTime + TimeSpan.FromMinutes(i * plan.TimeSlotLength)).ToString("HH");
+        for (var i = 0; i < _chartLabels.Length; i++)
+            if (i % (60 / plan.TimeSlotLength) == 0)
+                _chartLabels[i] = (plan.StartTime + TimeSpan.FromHours(i / (60 / plan.TimeSlotLength))).ToString("HH");
+            else
+                _chartLabels[i] = string.Empty;
+
     }
 
     private async Task UpdateScheduledPrograms()
