@@ -42,6 +42,9 @@ public record ProductionPlan(string Name, TimeSlot[] TimeSlots, int TimeSlotLeng
     public readonly TimeSlot[] TimeSlots = TimeSlots;
 }
 
+/// <summary>
+/// represents a scheduled program
+/// </summary>
 public record ScheduledProgram
 {
     public int Id { get; init; }
@@ -49,6 +52,9 @@ public record ScheduledProgram
     public DateTime StartTime { get; init; }
 }
 
+/// <summary>
+///    Service for planning appliance programs.
+/// </summary>
 public class PlanningService
 {
     private readonly PlanPredictor _planPredictor;
@@ -71,11 +77,23 @@ public class PlanningService
         context.SaveChanges();
     }
 
+    /// <summary>
+    /// Method to get the current production plan
+    /// </summary>
+    /// <returns> The current production plan </returns>
     public Task<ProductionPlan?> GetCurrentProductionPlan()
     {
         return Task.FromResult(_currentPlan);
     }
 
+    /// <summary>
+    ///    Plans appliance programs for normal solar production plan.
+    /// </summary>
+    /// <param name="programs"> Programs to plan </param>
+    /// <param name="startTime"> Start time of the production plan </param>
+    /// <param name="timeSlotLength"> Length of each TimeSlot in minutes </param>
+    /// <param name="timeSlotCount"> Number of time slots to plan </param>
+    /// <returns></returns>
     public Task<ProductionPlan> PlanProgramsNormalSolar(IProgram[] programs, DateTime startTime, int timeSlotLength,
         int timeSlotCount)
     {
@@ -103,6 +121,10 @@ public class PlanningService
         Log.Information("Saved {ProgramCount} scheduled programs to database", scheduledPrograms.Length);
     }
 
+    /// <summary>
+    /// Method to get the scheduled programs
+    /// </summary>
+    /// <returns> The scheduled programs </returns>
     public Task<ScheduledProgram[]> GetScheduledPrograms()
     {
         using var scope = _serviceProvider.CreateScope();
@@ -127,6 +149,11 @@ public class PlanningService
             : new ScheduledProgram { Id = model.Id, Program = program, StartTime = model.StartTime };
     }
 
+    /// <summary>
+    /// Method to remove a scheduled program
+    /// </summary>
+    /// <param name="id"> The id of the scheduled program to remove </param>
+    /// <returns> True if the scheduled program was removed, false otherwise </returns>
     public Task<bool> RemoveScheduledProgram(int id)
     {
         using var scope = _serviceProvider.CreateScope();

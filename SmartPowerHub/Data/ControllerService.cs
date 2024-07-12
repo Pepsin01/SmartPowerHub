@@ -7,9 +7,19 @@ using System.Text;
 
 namespace SmartPowerHub.Data
 {
+    /// <summary>
+    /// Service for managing controllers.
+    /// </summary>
+    /// <param name="serviceProvider"> Service provider for creating instances </param>
     public class ControllerService(IServiceProvider serviceProvider)
     {
         private static readonly string Path = System.IO.Path.Combine(Environment.CurrentDirectory, "IoTControllers");
+
+        /// <summary>
+        /// Receives a list of controllers and updates it with the controllers found in the controller directory.
+        /// </summary>
+        /// <typeparam name="TDevice"> Type of the device the controllers are for </typeparam>
+        /// <param name="controllers"> List of controllers to update </param>
         public static void UpdateControllers<TDevice>(List<IController> controllers) where TDevice : IDevice
         {
             //Log.Information($"Searching for controllers in {_path}");

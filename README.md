@@ -1,4 +1,4 @@
-# SmartPowerHub# SmartPowerHub
+# SmartPowerHub
 
 ## Description
 SmartPowerHub is a project that aims to provide a centralized hub for managing and controlling IoT devices in a home or office environment.
@@ -22,14 +22,20 @@ It's main goal is to reduce the financial operating costs of household by provid
 
 ## Installation
 1. Clone the repository:
-```git clone https://github.com/Pepsin01/SmartPowerHub.git```
+```
+git clone https://github.com/Pepsin01/SmartPowerHub.git
+```
 2. Navigate to the root directory of the solution and put all the *.dll* files with IoT controllers in the *SmartPowerHub/IoTControllers* directory.
 3. We use the Docker software to build this app. You can download it from [here](https://www.docker.com/products/docker-desktop).
 4. Before building a docker container, you need to have docker demon running.
 5. In order to build this app, navigate to the root directory of this solution and run the following command:
-```docker build -f SmartPowerHub/Dockerfile -t smart-power-hub .```
+```
+docker build -f SmartPowerHub/Dockerfile -t smart-power-hub .
+```
 6. After the build is complete, you can run the container with the following command:
-```docker run -d -p <HOST_PORT>:<CONTAINER_PORT> --name smart-power-hub-container smart-power-hub```
+```
+docker run -d -p <HOST_PORT>:<CONTAINER_PORT> --name smart-power-hub-container smart-power-hub
+```
 7. Insure that the ports specified in the previous command are available on your machine.
 8. You can now access the app by navigating to `http://<YOUR_HOST_IP>:<HOST_PORT>` in your browser.
 
@@ -43,14 +49,20 @@ It's main goal is to reduce the financial operating costs of household by provid
 If you wish to test this application without having any of the IoT devices and respective controllers, you can use the mock IoT controller provided in the *ZigBeeControllerMockup* directory.
 To build and test this application with the mock controller, follow these steps:
 1. Build the mock controller by running the following command in the root directory of the solution:
-```dotnet build ZigBeeControllerMockup/ZigBeeControllerMockup.csproj```
+```
+dotnet build ZigBeeControllerMockup/ZigBeeControllerMockup.csproj
+```
 This will create a *ZigBeeControllerMockup.dll* file and copy it to the *SmartPowerHub/IoTControllers* directory.
 If you don't have the dotnet command installed, follow steps on [this page](https://learn.microsoft.com/en-us/dotnet/core/install/).
 2. As in the install part, insure that the docker is available and docker demon is running.
 3. Navigate to the root directory of this solution and run the following command:
-```docker build -f SmartPowerHub/Dockerfile -t smart-power-hub .```
+```
+docker build -f SmartPowerHub/Dockerfile -t smart-power-hub .
+```
 4. Finally, run the container with the following command:
-```docker run -d -p 8080:8080 --name smart-power-hub-container smart-power-hub```
+```
+docker run -d -p 8080:8080 --name smart-power-hub-container smart-power-hub
+```
 5. Now you can access the app by navigating to `http://localhost:8080` in your browser.
 
 ## Contributing

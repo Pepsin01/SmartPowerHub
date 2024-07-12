@@ -93,7 +93,6 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
     /// <summary>
     ///   Gets all devices of the specified type
     /// </summary>
-    /// <typeparam name="T"> The type of devices to get </typeparam>
     /// <returns> An array of devices of the specified type </returns>
     public Task<TDevice[]> GetDevicesAsync()
     {
@@ -105,7 +104,6 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
     /// <summary>
     ///  Adds a new device to the database and the controller
     /// </summary>
-    /// <typeparam name="T"> The type of device to add </typeparam>
     /// <param name="controllerName"> The name of the controller to add the device to </param>
     /// <returns> The added device if successful, null otherwise </returns>
     public async Task<TDevice?> AddDeviceAsync(string controllerName)
@@ -163,7 +161,7 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
     }
 
     /// <summary>
-    ///   Removes an device from the database and the controller
+    /// Removes a device from the database and the controller
     /// </summary>
     /// <param name="device"> The device to remove </param>
     /// <returns> True if the device was removed successfully, false otherwise </returns>
@@ -190,7 +188,7 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
     }
 
     /// <summary>
-    ///  Updates the configuration of an device in the database
+    ///  Updates the configuration of a device in the database
     /// </summary>
     /// <param name="device"> The updated device </param>
     /// <returns> True if the device was updated successfully, false otherwise </returns>
@@ -210,7 +208,6 @@ public class DeviceService<TDevice> where TDevice : class, IDevice
     /// <summary>
     /// Gets names of all available controllers of the specified type
     /// </summary>
-    /// <typeparam name="T"> The type of controllers to get </typeparam>
     /// <returns> An array of names of the available controllers </returns>
     public async Task<string[]> GetAvailableControllersAsync()
     {
