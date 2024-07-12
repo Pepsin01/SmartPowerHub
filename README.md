@@ -54,6 +54,7 @@ dotnet build ZigBeeControllerMockup/ZigBeeControllerMockup.csproj
 ```
 This will create a *ZigBeeControllerMockup.dll* file and copy it to the *SmartPowerHub/IoTControllers* directory.
 If you don't have the dotnet command installed, follow steps on [this page](https://learn.microsoft.com/en-us/dotnet/core/install/).
+
 2. As in the install part, insure that the docker is available and docker demon is running.
 3. Navigate to the root directory of this solution and run the following command:
 ```
